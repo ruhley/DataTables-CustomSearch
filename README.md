@@ -37,7 +37,10 @@ fields: [0,[2,3],[4,6],5]
 If you want to have more control then you need to pass in an object.
 ```javascript
 fields: [
-  0,
+  {
+    field: '#myField',
+    columns: 0
+  },
   [2,3],
   {
     label: 'String Field',
@@ -71,7 +74,14 @@ Default: ```[]```
 Required
 Accepts: number or array of numbers
 Requirements: none
-This will tie the field to the column(s) (starting with an index of 0). 
+This will tie the field to the column(s) (starting with an index of 0).
+
+####field
+Default: ''
+Optional
+Accepts: jQuery selector string or jQuery object
+Requirements: none
+This will tie an existing field to search the column. If supplied the label, type, and options will be ignored.
 
 ####label
 Default: Column Header (if a range then a concat of the column headers).
