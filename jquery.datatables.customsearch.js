@@ -21,21 +21,24 @@
              * @namespace The settings passed in by the user and manipulated by CustomSearch
              */
             this.c = {
-                "columns": [],
-                "container": "",
-                "removeStandardSearch": false
+                fields: [],
+                container: '',
+                hideStandardSearch: false
             };
 
             /**
              * @namespace Settings object which contains customisable information for CustomSearch instance
              */
-            this.s = {};
+            this.s = {
+                dt: null,
+                init: null
+            };
 
             /**
              * @namespace Common and useful DOM elements for the class instance
              */
             this.dom = {
-                "table": null
+                table: null
             };
 
 
@@ -54,176 +57,198 @@
                 var
                     that = this,
                     i, j,
-                    column,
-                    form = [];
+                    field,
+                    form = [],
+                    allIds = [];
 
                 this.s.dt = new DataTable.Api(dt).settings()[0];
                 this.s.init = config || {};
-                this.dom.table = this.s.dt.nTable;
+                this.dom.table = $(this.s.dt.nTable);
 
                 $.extend(true, this.c, CustomSearch.defaults, config);
 
-                if (this.c.removeStandardSearch === true) {
+                if (this.c.hideStandardSearch === true) {
                     $('#' + this.s.dt.sInstance + '_filter').hide();
                 }
 
-                for (i = 0; i < this.c.columns.length; i++) {
-                    column = this.c.columns[i];
+                for (i = 0; i < this.c.fields.length; i++) {
+                    field = this.c.fields[i];
 
                     /*
-                     set up the config for the column
+                     set up the config for the field
                     */
 
                     // if only a number or an array of numbers given then they are the columns
-                    if (!isNaN(column) || $.isArray(column)) {
-                        column = {
-                            columns: column
+                    if (!isNaN(field) || $.isArray(field)) {
+                        field = {
+                            columns: field
                         };
                     }
 
-                    column.range = this._fnGetRange(column.range);
-                    column.id = this._fnGetId(i, column.range);
-                    column.label = this._fnGetLabel(column.label, column.range, column.columns);
-                    column.type = this._fnGetType(column.type, column.columns);
-                    column.field = '';
+                    field.field = this._fnGetField(field.field);
+                    field.range = this._fnGetRange(field.range);
+                    field.id = this._fnGetId(i, field.range, field.field);
+                    field.label = this._fnGetLabel(field.label, field.range, field.columns);
+                    field.type = this._fnGetType(field.type, field.columns);
 
-
-
-                    switch (column.type) {
-                        case 'string':
-                            column.field = '<label for="' + column.id + '">' + column.label + '</label>' +
-                                            '<input type="text" id="' + column.id + '" data-table="#' + this.dom.table.id + '">';
-                        break;
-                        case 'number':
-                        case 'currency':
-                        case 'num':
-                        case 'num-fmt':
-                            if (column.range.length === 0) {
-                                column.field = '<label for="' + column.id + '">' + column.label + '</label>' +
-                                                '<input type="number" id="' + column.id + '" data-table="#' + this.dom.table.id + '">';
-                            } else {
-                                if (this._fnHasRange('min', column.range)) {
-                                    column.field += '<label for="' + column.id.min + '">' + column.label.min + '</label>' +
-                                                    '<input type="number" id="' + column.id.min + '" data-table="#' + this.dom.table.id + '">';
-                                }
-
-                                if (this._fnHasRange('max', column.range)) {
-                                    column.field += '<label for="' + column.id.max + '">' + column.label.max + '</label>' +
-                                                    '<input type="number" id="' + column.id.max + '" data-table="#' + this.dom.table.id + '">';
-                                }
-                            }
-                        break;
-                        case 'select':
-                            column.field = '<label for="' + column.id + '">' + column.label + '</label>' +
-                                            '<select id="' + column.id + '" data-table="#' + this.dom.table.id + '">';
-
-                            if (!column.options || column.options.length === 0) {
-                                column.options = [{
-                                    value: '',
-                                    text: 'All'
-                                }];
-
-                                $.each(this.s.dt.aoData, function (index, row) {
-                                    if ($.inArray(row._aData[column.columns], column.options) === -1) {
-                                        column.options.push(row._aData[column.columns]);
-                                    }
-                                });
-                            }
-
-                            for (j = 0; j < column.options.length; j++) {
-                                if (typeof column.options[j] === 'object') {
-                                    column.field += '<option value="' + column.options[j].value + '">' + column.options[j].text + '</option>';
-                                } else {
-                                    column.field += '<option value="' + column.options[j] + '">' + column.options[j] + '</option>';
-                                }
-                            }
-
-                            column.field += '</select>';
-                        break;
-
-                        case 'date':
-                            if (column.range.length === 0) {
-                                column.field = '<label for="' + column.id + '">' + column.label + '</label>' +
-                                                '<input type="date" id="' + column.id + '" data-table="#' + this.dom.table.id + '">';
-                            } else {
-                                if (this._fnHasRange('min', column.range)) {
-                                    column.field += '<label for="' + column.id.min + '">' + column.label.min + '</label>' +
-                                                    '<input type="date" id="' + column.id.min + '" data-table="#' + this.dom.table.id + '">';
-                                }
-
-                                if (this._fnHasRange('max', column.range)) {
-                                    column.field += '<label for="' + column.id.max + '">' + column.label.max + '</label>' +
-                                                    '<input type="date" id="' + column.id.max + '" data-table="#' + this.dom.table.id + '">';
-                                }
-                            }
-                        break;
-
-                        default:
-                            throw( "Warning: CustomSearch init failed due to invalid column type given - " + column.type );
-                        break;
+                    if (field.range.length === 0) {
+                        allIds.push(field.id);
+                    } else {
+                        for (var id in field.id) {
+                            allIds.push(field.id[id]);
+                        }
                     }
 
-                    form.push(column.field);
 
-                    this.c.columns[i] = column;
+                    if (field.field === '') {
+                        switch (field.type) {
+                            case 'string':
+                                field.field = '<label for="' + field.id + '">' + field.label + '</label>' +
+                                                '<input type="text" id="' + field.id + '">';
+                            break;
+                            case 'number':
+                            case 'currency':
+                            case 'num':
+                            case 'num-fmt':
+                                if (field.range.length === 0) {
+                                    field.field = '<label for="' + field.id + '">' + field.label + '</label>' +
+                                                    '<input type="number" id="' + field.id + '">';
+                                } else {
+                                    if (this._fnHasRange('min', field.range)) {
+                                        field.field += '<label for="' + field.id.min + '">' + field.label.min + '</label>' +
+                                                        '<input type="number" id="' + field.id.min + '">';
+                                    }
+
+                                    if (this._fnHasRange('max', field.range)) {
+                                        field.field += '<label for="' + field.id.max + '">' + field.label.max + '</label>' +
+                                                        '<input type="number" id="' + field.id.max + '">';
+                                    }
+                                }
+                            break;
+                            case 'select':
+                                field.field = '<label for="' + field.id + '">' + field.label + '</label>' +
+                                                '<select id="' + field.id + '">';
+
+                                if (!field.options || field.options.length === 0) {
+                                    field.options = [{
+                                        value: '',
+                                        text: 'All'
+                                    }];
+
+                                    $.each(this.s.dt.aoData, function (index, row) {
+                                        if ($.inArray(row._aData[field.columns], field.options) === -1) {
+                                            field.options.push(row._aData[field.columns]);
+                                        }
+                                    });
+                                } else {
+                                    field.options.unshift({
+                                        value: '',
+                                        text: 'All'
+                                    });
+                                }
+
+                                for (j = 0; j < field.options.length; j++) {
+                                    if (typeof field.options[j] === 'object') {
+                                        field.field += '<option value="' + field.options[j].value + '">' + field.options[j].text + '</option>';
+                                    } else {
+                                        field.field += '<option value="' + field.options[j] + '">' + field.options[j] + '</option>';
+                                    }
+                                }
+
+                                field.field += '</select>';
+                            break;
+
+                            case 'date':
+                                if (field.range.length === 0) {
+                                    field.field = '<label for="' + field.id + '">' + field.label + '</label>' +
+                                                    '<input type="date" id="' + field.id + '">';
+                                } else {
+                                    if (this._fnHasRange('min', field.range)) {
+                                        field.field += '<label for="' + field.id.min + '">' + field.label.min + '</label>' +
+                                                        '<input type="date" id="' + field.id.min + '">';
+                                    }
+
+                                    if (this._fnHasRange('max', field.range)) {
+                                        field.field += '<label for="' + field.id.max + '">' + field.label.max + '</label>' +
+                                                        '<input type="date" id="' + field.id.max + '">';
+                                    }
+                                }
+                            break;
+
+                            default:
+                                throw( "Warning: CustomSearch init failed due to invalid field type given - " + field.type );
+                            break;
+                        }
+
+                        form.push(field.field);
+                    }
+
+                    // push back changes to the field to the config
+                    this.c.fields[i] = field;
                 }
 
                 if (!this.c.container) {
                     this.c.container = this.s.dt.nTableWrapper;
-                    $(this.c.container).prepend('<div>' + form.join('') + '</div>');
-                } else {
-                    $(this.c.container).append('<div>' + form.join('') + '</div>');
                 }
 
-                $(this.c.container).find('input,select').change(function () {
-                    $($(this).data('table')).DataTable().draw();
+                if (form.length > 0) {
+                    if (this.c.container == this.s.dt.nTableWrapper) {
+                        $(this.c.container).prepend('<div>' + form.join('') + '</div>');
+                    } else {
+                        $(this.c.container).append('<div>' + form.join('') + '</div>');
+                    }
+                }
+
+                $('#' + allIds.join(',#')).change(function () {
+                    that.dom.table.DataTable().draw();
                 });
 
-                $(this.dom.table).dataTable().DataTable.ext.search.push(function (settings, data, dataIndex) {
+
+                this.dom.table.dataTable().DataTable.ext.search.push(function (settings, data, dataIndex) {
                     return that._fnSearch(settings, data, dataIndex);
                 });
             },
 
             "_fnSearch": function (settings, data, dataIndex) {
-                var i, j, pass, value, values, column, allColumns;
+                var i, j, pass, value, values, field, allFields;
 
-                for (i = 0; i < this.c.columns.length; i++) {
-                    column = this.c.columns[i];
+                for (i = 0; i < this.c.fields.length; i++) {
+                    field = this.c.fields[i];
 
-                    if (column.range.length === 0) {
-                        value = $('#' + column.id).val();
+                    if (field.range.length === 0) {
+                        value = $('#' + field.id).val();
 
-                        if ($.isArray(column.columns)) {
+                        if ($.isArray(field.columns)) {
                             pass = false;
-                            allColumns = [];
+                            allFields = [];
 
-                            for (j = 0; j < column.columns.length; j++) {
-                                allColumns.push(data[column.columns[j]]);
-                                if (this._fnSearchString(data[column.columns[j]], value)) {
+                            for (j = 0; j < field.columns.length; j++) {
+                                allFields.push(data[field.columns[j]]);
+                                if (this._fnSearchString(data[field.columns[j]], value)) {
                                     pass = true;
                                 }
                             }
 
                             if (pass === false) {
-                                if (!this._fnSearchString(allColumns.join(' '), value)) {
+                                if (!this._fnSearchString(allFields.join(' '), value)) {
                                     return false;
                                 }
                             }
                         } else {
-                            if (!this._fnSearchString(data[column.columns], value)) {
+                            if (!this._fnSearchString(data[field.columns], value)) {
                                 return false;
                             }
                         }
                     } else {
                         values = {
-                            min: this._fnHasRange('min', column.range) ? $('#' + column.id.min).val() : '',
-                            max: this._fnHasRange('max', column.range) ? $('#' + column.id.max).val() : ''
-                        }
+                            min: this._fnHasRange('min', field.range) ? $('#' + field.id.min).val() : '',
+                            max: this._fnHasRange('max', field.range) ? $('#' + field.id.max).val() : ''
+                        };
 
-                        if ($.isArray(column.columns)) {
+                        if ($.isArray(field.columns)) {
                             pass = false;
-                            for (j = 0; j < column.columns.length; j++) {
-                                if (this._fnSearchNumberRange(data[column.columns[j]], values)) {
+                            for (j = 0; j < field.columns.length; j++) {
+                                if (this._fnSearchNumberRange(data[field.columns[j]], values)) {
                                     pass = true;
                                 }
                             }
@@ -232,7 +257,7 @@
                                 return false;
                             }
                         } else {
-                            if (!this._fnSearchNumberRange(data[column.columns], values)) {
+                            if (!this._fnSearchNumberRange(data[field.columns], values)) {
                                 return false;
                             }
                         }
@@ -301,24 +326,42 @@
                 return newRange;
             },
 
-            "_fnGetId": function (index, range) {
+            "_fnGetField": function (field) {
+                if (field) {
+                    return $(field);
+                }
+
+                return '';
+            },
+
+            "_fnGetId": function (index, range, field) {
                 var baseId = this.s.dt.sInstance + '_' + index,
-                    id;
+                    newId, fieldId;
 
                 if (range.length === 0) {
-                    id = baseId;
+                    newId = baseId;
                 } else {
-                    id = {};
+                    newId = {};
                     if (this._fnHasRange('min', range)) {
-                        id.min = baseId + '_min';
+                        newId.min = baseId + '_min';
                     }
 
                     if (this._fnHasRange('max', range)) {
-                        id.max = baseId + '_max';
+                        newId.max = baseId + '_max';
                     }
                 }
 
-                return id;
+                if (field) {
+                    fieldId = field.attr('id');
+                    if (fieldId) {
+                        newId = fieldId;
+                    } else {
+                        field.attr('id', newId);
+                    }
+                }
+
+
+                return newId;
             },
 
             "_fnGetLabel": function (label, range, columns) {
