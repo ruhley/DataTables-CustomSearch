@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<title>Test</title>
-		
+
 		<link type="text/css" rel="stylesheet" href="//datatables.net/download/build/nightly/jquery.dataTables.css?_=1c0eb9540e67f90cd07fa12f4da56554">
 		<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.0.js"></script>
 		<script type="text/javascript" src="//datatables.net/download/build/nightly/jquery.dataTables.min.js?_=898a29d5c2a3871243ceea4db156ac44"></script>
@@ -10,8 +10,8 @@
 		<script type="text/javascript">
 			$(document).ready(function(){
 				$('table').dataTable();
-	
-				new $.fn.dataTable.CustomSearch($('table').dataTable(), {fields: [[0,1],2,3,4,5]});
+
+				new $.fn.dataTable.CustomSearch($('table').dataTable(), {fields: [[0,1],2,3,4,5,6]});
 			});
 		</script>
 	</head>
@@ -25,6 +25,7 @@
 					<th>Date</th>
 					<th>Amount</th>
 					<th>Available?</th>
+					<th>Race</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -37,6 +38,7 @@
 							<td>" . generateDate() . "</td>
 							<td>" . generateCurrency() . "</td>
 							<td>" . generateBoolean() . "</td>
+							<td>" . generateRace() . "</td>
 						</tr>";
 					}
 				?>
@@ -79,5 +81,17 @@
 
 	function generateBoolean() {
 		return mt_rand(0, 1) == 1 ? "Yes" : "No";
+	}
+
+	function generateRace() {
+		$races = array(
+			'Mongoloid',
+			'Caucasiod',
+			'Australoid',
+			'Negroid',
+			'Capoid'
+		);
+
+		return $races[mt_rand(0, count($races) - 1)];
 	}
 ?>
