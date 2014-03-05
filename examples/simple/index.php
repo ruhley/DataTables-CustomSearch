@@ -16,10 +16,6 @@
 		</script>
 	</head>
 	<body>
-		<div id="form">
-			<input type="text" id="myField">
-		</div>
-
 		<table class="stripe hover cell-border order-column">
 			<thead>
 				<tr>
