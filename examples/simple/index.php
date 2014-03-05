@@ -2,6 +2,18 @@
 <html>
 	<head>
 		<title>Test</title>
+		
+		<link type="text/css" rel="stylesheet" href="//datatables.net/download/build/nightly/jquery.dataTables.css?_=1c0eb9540e67f90cd07fa12f4da56554">
+		<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.0.js"></script>
+		<script type="text/javascript" src="//datatables.net/download/build/nightly/jquery.dataTables.min.js?_=898a29d5c2a3871243ceea4db156ac44"></script>
+		<script type="text/javascript" src="/jquery.datatables.customsearch.js"></script>
+		<script type="text/javascript">
+			$(document).ready(function(){
+				$('table').dataTable();
+	
+				new $.fn.dataTable.CustomSearch($('table').dataTable(), {fields: [[0,1],2,3,4,5]});
+			});
+		</script>
 	</head>
 	<body>
 		<div id="form">
@@ -34,20 +46,6 @@
 				?>
 			</tbody>
 		</table>
-
-		<link type="text/css" rel="stylesheet" href="jquery.datatables.1.10-beta2/css/jquery.dataTables.min.css">
-		<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.0.js"></script>
-		<script type="text/javascript" src="jquery.datatables.1.10-beta2/js/jquery.dataTables.js"></script>
-		<script type="text/javascript" src="jquery.datatables.customsearch.js"></script>
-		<script type="text/javascript">
-			$('table').dataTable();
-
-			new $.fn.dataTable.CustomSearch($('table').dataTable(), {
-				"container": "#form",
-				hideStandardSearch: true,
-				fields: [[0,1],2,3,4,5]
-			});
-		</script>
 	</body>
 </html>
 
