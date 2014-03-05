@@ -88,19 +88,18 @@
 	function generateName() {
 		$length = mt_rand(3, 10);
 		$vowels = array('a', 'e', 'i', 'o', 'u');
+		$consonants = array('b', 'c', 'd', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z');
 		$name = "";
 
 		for($i = 1; $i <= $length; $i++) {
-			if ($i == 1) {
-				$name .= chr(mt_rand(65, 90));
-			} else if ($i % 2 == 0) {
-				$name .= $vowels[mt_rand(0, 4)];
+			if ($i % 2 == 0) {
+				$name .= $vowels[mt_rand(0, count($vowels) - 1)];
 			} else {
-				$name .= chr(mt_rand(97, 122));
+				$name .= $consonants[mt_rand(0, count($vowels) - 1)];
 			}
 		}
 
-		return $name;
+		return ucfirst($name);
 	}
 
 	function generateAge() {
