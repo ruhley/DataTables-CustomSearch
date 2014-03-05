@@ -300,7 +300,7 @@
                     newRange = range.split(',');
                 }
 
-                if (typeof range === Array) {
+                if ($.isArray(range)) {
                     isMin = this._fnHasRange('min', range);
                     isMax = this._fnHasRange('max', range);
 
