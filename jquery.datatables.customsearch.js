@@ -224,8 +224,15 @@
 
                             for (j = 0; j < field.columns.length; j++) {
                                 allFields.push(data[field.columns[j]]);
-                                if (this._fnSearchString(data[field.columns[j]], value)) {
-                                    pass = true;
+
+                                if (field.type == 'date') {
+                                    if (this._fnSearchDate(data[field.columns[j]], value)) {
+                                        pass = true;
+                                    }
+                                } else {
+                                    if (this._fnSearchString(data[field.columns[j]], value)) {
+                                        pass = true;
+                                    }
                                 }
                             }
 
@@ -235,8 +242,14 @@
                                 }
                             }
                         } else {
-                            if (!this._fnSearchString(data[field.columns], value)) {
-                                return false;
+                            if (field.type == 'date') {
+                                if (!this._fnSearchDate(data[field.columns], value)) {
+                                    return false;
+                                }
+                            } else {
+                                if (!this._fnSearchString(data[field.columns], value)) {
+                                    return false;
+                                }
                             }
                         }
                     } else {
@@ -248,8 +261,14 @@
                         if ($.isArray(field.columns)) {
                             pass = false;
                             for (j = 0; j < field.columns.length; j++) {
-                                if (this._fnSearchNumberRange(data[field.columns[j]], values)) {
-                                    pass = true;
+                                if (field.type == 'date') {
+                                    if (this._fnSearchDateRange(data[field.columns[j]], values)) {
+                                        pass = true;
+                                    }
+                                } else {
+                                    if (this._fnSearchNumberRange(data[field.columns[j]], values)) {
+                                        pass = true;
+                                    }
                                 }
                             }
 
@@ -257,8 +276,14 @@
                                 return false;
                             }
                         } else {
-                            if (!this._fnSearchNumberRange(data[field.columns], values)) {
-                                return false;
+                            if (field.type == 'date') {
+                                if (!this._fnSearchDateRange(data[field.columns], values)) {
+                                    return false;
+                                }
+                            } else {
+                                if (!this._fnSearchNumberRange(data[field.columns], values)) {
+                                    return false;
+                                }
                             }
                         }
                     }
@@ -268,8 +293,8 @@
             },
 
 
-            "_fnSearchString": function (cell, search) {
-                return cell.toLowerCase().search(search.toLowerCase()) >= 0;
+            "_fnSearchString": function (cell, value) {
+                return cell.toLowerCase().search(value.toLowerCase()) >= 0;
             },
 
             "_fnSearchNumberRange": function (cell, values) {
@@ -287,6 +312,34 @@
                         (values.min <= cell && isNaN(values.max)) ||
                         (values.min <= cell && values.max >= cell)
                 );
+            },
+
+            "_fnSearchDate": function (cell, value) {
+                cell = new Date(cell);
+                value = new Date(value);
+
+                return (this._fnIsValidDate(cell) && cell == value);
+            },
+
+            "_fnSearchDateRange": function (cell, values) {
+                cell = new Date(cell);
+                values.min = new Date(values.min);
+                values.max = new Date(values.max);
+
+                if (!this._fnIsValidDate(cell)) {
+                    return false;
+                }
+
+                return (
+                        (!this._fnIsValidDate(values.min) && !this._fnIsValidDate(values.max)) ||
+                        (!this._fnIsValidDate(values.min) && values.max >= cell) ||
+                        (values.min <= cell               && !this._fnIsValidDate(values.max)) ||
+                        (values.min <= cell               && values.max >= cell)
+                );
+            },
+
+            "_fnIsValidDate": function (date) {
+                return Object.prototype.toString.call(date) === '[object Date]' && !isNaN(date.getTime());
             },
 
 
