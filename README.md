@@ -70,59 +70,108 @@ fields: [
 ##Fields Options
 
 ####columns
-Default: ```[]```<br>
-Required<br>
-Accepts: number or array of numbers<br>
-Requirements: none<br>
+Default: ```[]```
+
+Required
+
+Accepts: number or array of numbers
+
+Requirements: none
+
 This will tie the field to the column(s) (starting with an index of 0).
 
+
 ####field
-Default: ''<br>
-Optional<br>
-Accepts: jQuery selector string or jQuery object<br>
-Requirements: none<br>
+Default: ''
+
+Optional
+
+Accepts: jQuery selector string or jQuery object
+
+Requirements: none
+
 This will tie an existing field to search the column. If supplied the label, type, and options will be ignored.
 
+
 ####label
-Default: Column Header (if a range then a concat of the column headers).<br>
-Optional<br>
-Accepts: string (plain text or html)<br>
-Requirements: none<br>
+Default: Column Header (if a range then a concat of the column headers).
+
+Optional
+
+Accepts: string (plain text or html)
+
+Requirements: none
+
 The text in the ```<label>``` tag.
 
+
 ####type
-Default: DataTables column types (https://next.datatables.net/reference/option/columns.type)<br>
-Optional<br>
-Accepts: ```'string', 'number', 'select', 'date'```<br>
-Requirements: none<br>
+Default: DataTables column types (https://next.datatables.net/reference/option/columns.type)
+
+Optional
+
+Accepts: ```'string', 'number', 'select', 'date'```
+
+Requirements: none
+
 This specifies the type of field to create, and affects how it is searched.
 
+
 ####range
-Default: ```[]```<br>
-Optional<br>
-Accepts: ```[], ['min'], ['max'], ['min', 'max']```<br>
-Requirements: type is number or date<br>
+Default: ```[]```
+
+Optional
+
+Accepts: ```[], ['min'], ['max'], ['min', 'max']```
+
+Requirements: type is number or date
+
 This will create a min and/or max field that the column values will have to be between.
 
+
 ####advanced
-Default: false<br>
-Optional<br>
-Accepts: boolean<br>
-Requirements: none<br>
+Default: false
+
+Optional
+
+Accepts: boolean
+
+Requirements: none
+
 Puts a dropdown in from the of the field giving the user advanced searching options. It will have: contains, does not contain, is equal to, is not equal to. If the type is a number or range then it will give the options is greater than and is less than.
 
+
 ####caseInsensitive
-Default: true<br>
-Optional<br>
-Accepts: boolean<br>
-Requirements: none<br>
+Default: true
+
+Optional
+
+Accepts: boolean
+
+Requirements: none
+
 Whether or not string searches should be case sensitive or not.
 
+
+####server
+Default: ```null```
+
+Optional
+
+Accepts: string
+
+Requirements: dataTables serverSide is set to true
+
+If the dataTables serverSide option is set to true this plugin will automatically send the request. All fields will be added to the request using their id in the associative array customsearch. If you want a custom key in the array for the field then specify this field.
+
+
 ####options
-Default: The distinct values in the column<br>
-Optional<br>
-Accepts: an array of strings or objects<br>
-Requirements: ```type == 'select'```<br>
+Default: The distinct values in the column
+
+Optional
+
+Accepts: an array of strings or objects
+
+Requirements: ```type == 'select'```
+
 This will specify the options available in the select field. If the array item is an object then you need to specify the value and the text of the option. If it is a string then it counts for both. An 'All' option will always be put first with a value of ''.
-
-

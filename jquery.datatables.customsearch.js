@@ -91,6 +91,7 @@
                     field.label           = this._fnGetLabel(field.label, field.range, field.columns);
                     field.id              = this._fnGetId(i, field.range, field.field);
                     field.advanced        = this._fnGetAdvanced(field.advanced, field.range, field.id, field.type);
+                    field.server          = this._fnGetServer(field.server, field.id);
                     field.caseInsensitive = field.caseInsensitive != false;
                     field.smart           = field.smart == true;
                     field.field           = this._fnGetField(field);
@@ -128,13 +129,31 @@
                 }
 
                 $('#' + allIds.join(',#')).change(function () {
+                    if (that.s.dt.oInit.serverSide) {
+                        var ajax = that.s.dt.ajax;
+
+                        if (typeof ajax === 'string') {
+                            ajax = {url:ajax, data:{}};
+                        }
+
+                        ajax.data.customsearch = {};
+
+                        for (i = 0; i < that.c.fields.length; i++) {
+                            ajax.data.customsearch[that.c.fields[i].server] = $('#' + that.c.fields[i].id).val();
+                        }
+
+                        that.s.dt.ajax = ajax;
+                    }
+
                     that.dom.table.DataTable().draw();
                 });
 
 
-                this.dom.table.dataTable().DataTable.ext.search.push(function (settings, data, dataIndex) {
-                    return that._fnSearch(settings, data, dataIndex);
-                });
+                if (!this.s.dt.oInit.serverSide) {
+                    this.dom.table.dataTable().DataTable.ext.search.push(function (settings, data, dataIndex) {
+                        return that._fnSearch(settings, data, dataIndex);
+                    });
+                }
             },
 
             "_fnSearch": function (settings, data, dataIndex) {
@@ -540,6 +559,10 @@
                 }
 
                 return {id: '', field: ''};
+            },
+
+            _fnGetServer: function (server, id) {
+                return server ? server : id;
             },
 
             "_fnGetLabel": function (label, range, columns) {
