@@ -70,45 +70,59 @@ fields: [
 ##Fields Options
 
 ####columns
-Default: ```[]```
-Required
-Accepts: number or array of numbers
-Requirements: none
+Default: ```[]```<br>
+Required<br>
+Accepts: number or array of numbers<br>
+Requirements: none<br>
 This will tie the field to the column(s) (starting with an index of 0).
 
 ####field
-Default: ''
-Optional
-Accepts: jQuery selector string or jQuery object
-Requirements: none
+Default: ''<br>
+Optional<br>
+Accepts: jQuery selector string or jQuery object<br>
+Requirements: none<br>
 This will tie an existing field to search the column. If supplied the label, type, and options will be ignored.
 
 ####label
-Default: Column Header (if a range then a concat of the column headers).
-Optional
-Accepts: string (plain text or html)
-Requirements: none
+Default: Column Header (if a range then a concat of the column headers).<br>
+Optional<br>
+Accepts: string (plain text or html)<br>
+Requirements: none<br>
 The text in the ```<label>``` tag.
 
 ####type
-Default: DataTables column types (https://next.datatables.net/reference/option/columns.type)
-Optional
-Accepts: ```'string', 'number', 'select', 'date'```
-Requirements: none
+Default: DataTables column types (https://next.datatables.net/reference/option/columns.type)<br>
+Optional<br>
+Accepts: ```'string', 'number', 'select', 'date'```<br>
+Requirements: none<br>
 This specifies the type of field to create, and affects how it is searched.
 
 ####range
-Default: ```[]```
-Optional
-Accepts: ```[], ['min'], ['max'], ['min', 'max']```
-Requirements: type is number or date
+Default: ```[]```<br>
+Optional<br>
+Accepts: ```[], ['min'], ['max'], ['min', 'max']```<br>
+Requirements: type is number or date<br>
 This will create a min and/or max field that the column values will have to be between.
 
+####advanced
+Default: false<br>
+Optional<br>
+Accepts: boolean<br>
+Requirements: none<br>
+Puts a dropdown in from the of the field giving the user advanced searching options. It will have: contains, does not contain, is equal to, is not equal to. If the type is a number or range then it will give the options is greater than and is less than.
+
+####caseInsensitive
+Default: true<br>
+Optional<br>
+Accepts: boolean<br>
+Requirements: none<br>
+Whether or not string searches should be case sensitive or not.
+
 ####options
-Default: The distinct values in the column
-Optional
-Accepts: an array of strings or objects
-Requirements: ```type == 'select'```
+Default: The distinct values in the column<br>
+Optional<br>
+Accepts: an array of strings or objects<br>
+Requirements: ```type == 'select'```<br>
 This will specify the options available in the select field. If the array item is an object then you need to specify the value and the text of the option. If it is a string then it counts for both. An 'All' option will always be put first with a value of ''.
 
 
