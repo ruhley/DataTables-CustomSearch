@@ -15,7 +15,10 @@
 					container: '#container',
 					hideStandardSearch: true,
 					fields: [
-						[0,1],
+						{
+							columns: [0,1],
+							multiple: true
+						},
 						{
 							columns: 2,
 							type: 'number',
@@ -43,7 +46,8 @@
 						},
 						{
 							columns: 6,
-							type: 'select'
+							type: 'select',
+							multiple: true
 						}
 					]
 				});
@@ -121,7 +125,7 @@
 	function generateRace() {
 		$races = array(
 			'Mongoloid',
-			'Caucasiod',
+			'Caucasoid',
 			'Australoid',
 			'Negroid',
 			'Capoid'

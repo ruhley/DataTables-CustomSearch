@@ -11,11 +11,34 @@
 			$(document).ready(function(){
 				$('table').dataTable();
 
-				new $.fn.dataTable.CustomSearch($('table').dataTable(), {fields: [[0,1],2,3,4,5,6]});
+				new $.fn.dataTable.CustomSearch($('table').dataTable(), {
+					container: '#container',
+					hideStandardSearch: true,
+					fields: [
+						{
+							columns: [0,1],
+							advanced: true,
+							caseInsensitive: false
+						},
+						{
+							columns: 2,
+							advanced: true,
+						},
+						{
+							columns: 3,
+							advanced: true
+						},
+						{
+							columns: 4,
+							advanced: true
+						}
+					]
+				});
 			});
 		</script>
 	</head>
 	<body>
+		<div id="container"></div>
 		<table class="stripe hover cell-border order-column">
 			<thead>
 				<tr>
@@ -30,7 +53,7 @@
 			</thead>
 			<tbody>
 				<?php
-					for($i = 1; $i <= 2500; $i++) {
+					for($i = 1; $i <= 1000; $i++) {
 						print "<tr>
 							<td>" . generateName() . "</td>
 							<td>" . generateName() . "</td>
@@ -85,7 +108,7 @@
 	function generateRace() {
 		$races = array(
 			'Mongoloid',
-			'Caucasiod',
+			'Caucasoid',
 			'Australoid',
 			'Negroid',
 			'Capoid'
