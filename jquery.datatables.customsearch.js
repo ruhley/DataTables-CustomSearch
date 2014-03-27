@@ -67,8 +67,11 @@
 					$('#' + this.s.dt.sInstance + '_filter').hide();
 				}
 
-				if (this.c.fields === null || this.c.fields === undefined) {
-					this.c.fields = 0;
+				if (this.c.fields === null || this.c.fields === undefined || this.c.fields.length == 0) {
+                    this.c.fields = [];
+					for (var i = 0; i < this.s.dt.aoColumns.length; i++) {
+                        this.c.fields.push(i);
+                    }
 				}
 
 				if (!$.isArray(this.c.fields)) {

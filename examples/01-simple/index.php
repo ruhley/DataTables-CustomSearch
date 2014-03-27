@@ -9,9 +9,9 @@
 		<script type="text/javascript" src="../../jquery.datatables.customsearch.js"></script>
 		<script type="text/javascript">
 			$(document).ready(function(){
-				$('table').dataTable();
+				var table = $('table').dataTable();
 
-				new $.fn.dataTable.CustomSearch($('table').dataTable(), {fields: [[0,1],2,3,4,5,6]});
+				new $.fn.dataTable.CustomSearch(table);
 			});
 		</script>
 	</head>
