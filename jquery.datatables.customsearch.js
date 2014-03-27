@@ -1,19 +1,17 @@
 (function (window, document, undefined) {
-	"use strict";
+	'use strict';
 
 	var factory = function ($, DataTable) {
-		"use strict";
 
 		var CustomSearch = function (oDT, oConfig) {
-			"use strict";
 
 			// Sanity check that we are a new instance
-			/*if (!(this instanceof CustomSearch)) {
-				throw ("Warning: CustomSearch must be initialised with the keyword 'new'");
-			}*/
+			if (!(this instanceof CustomSearch)) {
+				throw ('Warning: CustomSearch must be initialised with the keyword "new".');
+			}
 
 			if (!$.fn.dataTableExt.fnVersionCheck('1.10.0')) {
-				throw ("Warning: CustomSearch requires DataTables 1.10 or greater");
+				throw ('Warning: CustomSearch requires DataTables 1.10 or greater.');
 			}
 
 			/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -40,7 +38,7 @@
 
 
 			// Run constructor logic
-			this._fnInit(oDT, oConfig);
+			this.init(oDT, oConfig);
 
 			// Return this for chaining
 			return this;
@@ -50,9 +48,10 @@
 			/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 			 * Private methods (they are of course public in JS, but recommended as private)
 			 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-			_fnInit: function (dt, config) {
+			init: function (dt, config) {
 				var that = this,
 					i,
+					id,
 					field,
 					form = [],
 					allIds = [];
@@ -67,11 +66,11 @@
 					$('#' + this.s.dt.sInstance + '_filter').hide();
 				}
 
-				if (this.c.fields === null || this.c.fields === undefined || this.c.fields.length == 0) {
-                    this.c.fields = [];
-					for (var i = 0; i < this.s.dt.aoColumns.length; i++) {
-                        this.c.fields.push(i);
-                    }
+				if (this.c.fields === null || this.c.fields === undefined || this.c.fields.length === 0) {
+					this.c.fields = [];
+					for (i = 0; i < this.s.dt.aoColumns.length; i++) {
+						this.c.fields.push(i);
+					}
 				}
 
 				if (!$.isArray(this.c.fields)) {
@@ -81,9 +80,7 @@
 				for (i = 0; i < this.c.fields.length; i++) {
 					field = this.c.fields[i];
 
-					/*
-					 set up the config for the field
-					*/
+					/* set up the config for the field */
 
 					// if only a number or an array of numbers given then they are the columns
 					if (!isNaN(field) || $.isArray(field)) {
@@ -92,17 +89,17 @@
 						};
 					}
 
-					field.columns         = $.isArray(field.columns) ? field.columns : [field.columns]
-					field.multiple        = this._fnGetMultiple(field.multiple);
-					field.type            = this._fnGetType(field.type, field.columns);
-					field.range           = this._fnGetRange(field.range);
-					field.label           = this._fnGetLabel(field.label, field.range, field.columns);
-					field.id              = this._fnGetId(i, field.range, field.field);
-					field.advanced        = this._fnGetAdvanced(field.advanced, field.range, field.id, field.type);
-					field.server          = this._fnGetServer(field.server, field.id);
-					field.caseInsensitive = field.caseInsensitive != false;
-					field.smart           = field.smart == true;
-					field.field           = this._fnGetField(field);
+					field.columns         = $.isArray(field.columns) ? field.columns : [field.columns];
+					field.multiple        = this.getMultiple(field.multiple);
+					field.type            = this.getType(field.type, field.columns);
+					field.range           = this.getRange(field.range);
+					field.label           = this.getLabel(field.label, field.range, field.columns);
+					field.id              = this.getId(i, field.range, field.field);
+					field.advanced        = this.getAdvanced(field.advanced, field.range, field.id, field.type);
+					field.server          = this.getServer(field.server, field.id);
+					field.caseInsensitive = field.caseInsensitive !== false;
+					field.smart           = field.smart === true;
+					field.field           = this.getField(field);
 
 					// makes sure the changes to the field are pushed back to the config
 					this.c.fields[i] = field;
@@ -110,7 +107,7 @@
 					if (field.range.length === 0) {
 						allIds.push(field.id);
 					} else {
-						for (var id in field.id) {
+						for (id in field.id) {
 							allIds.push(field.id[id]);
 						}
 					}
@@ -129,7 +126,7 @@
 				}
 
 				if (form.length > 0) {
-					if (this.c.container == this.s.dt.nTableWrapper) {
+					if (this.c.container === this.s.dt.nTableWrapper) {
 						$(this.c.container).prepend('<div>' + form.join('') + '</div>');
 					} else {
 						$(this.c.container).append('<div>' + form.join('') + '</div>');
@@ -159,7 +156,7 @@
 
 				if (!this.s.dt.oInit.serverSide) {
 					this.s.table.dataTable().DataTable.ext.search.push(function (settings, data, dataIndex) {
-						return that._fnSearch(settings, data, dataIndex);
+						return that.search(settings, data, dataIndex);
 					});
 				}
 
@@ -188,7 +185,7 @@
 				}
 			},
 
-			"_fnSearch": function (settings, data, dataIndex) {
+			search: function (settings, data, dataIndex) {
 				var i, j, pass, value, values, field, allFields, advancedValue;
 
 				for (i = 0; i < this.c.fields.length; i++) {
@@ -212,7 +209,7 @@
 
 							if (field.type == 'date' && !advancedValue) {
 								for (j = 0; j < field.columns.length; j++) {
-									if (this._fnSearchDate(data[field.columns[j]], value)) {
+									if (this.searchDate(data[field.columns[j]], value)) {
 										pass = true;
 										break;
 									}
@@ -223,7 +220,7 @@
 									allFields.push(data[field.columns[j]]);
 								}
 
-								if (this._fnSearchString(allFields.join(' '), value, advancedValue, field.caseInsensitive, field.smart)) {
+								if (this.searchString(allFields.join(' '), value, advancedValue, field.caseInsensitive, field.smart)) {
 									pass = true;
 								}
 							}
@@ -234,19 +231,19 @@
 						}
 					} else {
 						values = {
-							min: this._fnHasRange('min', field.range) ? $('#' + field.id.min).val() : '',
-							max: this._fnHasRange('max', field.range) ? $('#' + field.id.max).val() : ''
+							min: this.hasRange('min', field.range) ? $('#' + field.id.min).val() : '',
+							max: this.hasRange('max', field.range) ? $('#' + field.id.max).val() : ''
 						};
 
 						pass = false;
 						for (j = 0; j < field.columns.length; j++) {
 							if (field.type == 'date') {
-								if (this._fnSearchDateRange(data[field.columns[j]], values)) {
+								if (this.searchDateRange(data[field.columns[j]], values)) {
 									pass = true;
 									break;
 								}
 							} else {
-								if (this._fnSearchNumberRange(data[field.columns[j]], values)) {
+								if (this.searchNumberRange(data[field.columns[j]], values)) {
 									pass = true;
 									break;
 								}
@@ -263,20 +260,20 @@
 			},
 
 
-			"_fnSearchString": function (cell, value, advanced, caseInsensitive, smart) {
+			searchString: function (cell, value, advanced, caseInsensitive, smart) {
 				var pass = false;
 
 				// multiple select field that has nothing selected (so 'All')
 				if (value === null || !value.length) {
 					pass = true;
 				} else {
-					pass = this._fnSearchStringAdvanced(cell, value, advanced, caseInsensitive, smart);
+					pass = this.searchStringAdvanced(cell, value, advanced, caseInsensitive, smart);
 				}
 
 				return pass;
 			},
 
-			_fnSearchStringAdvanced: function (string, search, advanced, caseInsensitive, smart) {
+			searchStringAdvanced: function (string, search, advanced, caseInsensitive, smart) {
 				var i = 0,
 					stringNumber,
 					searchNumber;
@@ -318,7 +315,7 @@
 				return false;
 			},
 
-			"_fnSearchNumberRange": function (cell, values) {
+			searchNumberRange: function (cell, values) {
 				cell = parseInt(cell.replace(/[^\d]/i, ''), 10);
 				values.min = parseInt(values.min, 10);
 				values.max = parseInt(values.max, 10);
@@ -335,38 +332,38 @@
 				);
 			},
 
-			"_fnSearchDate": function (cell, value) {
+			searchDate: function (cell, value) {
 				cell = new Date(cell);
 				value = new Date(value);
 
-				return (this._fnIsValidDate(cell) && cell == value);
+				return (this.isValidDate(cell) && cell == value);
 			},
 
-			"_fnSearchDateRange": function (cell, values) {
+			searchDateRange: function (cell, values) {
 				cell = new Date(cell);
 				values.min = new Date(values.min);
 				values.max = new Date(values.max);
 
-				if (!this._fnIsValidDate(cell)) {
+				if (!this.isValidDate(cell)) {
 					return false;
 				}
 
 				return (
-						(!this._fnIsValidDate(values.min) && !this._fnIsValidDate(values.max)) ||
-						(!this._fnIsValidDate(values.min) && values.max >= cell) ||
-						(values.min <= cell               && !this._fnIsValidDate(values.max)) ||
+						(!this.isValidDate(values.min) && !this.isValidDate(values.max)) ||
+						(!this.isValidDate(values.min) && values.max >= cell) ||
+						(values.min <= cell               && !this.isValidDate(values.max)) ||
 						(values.min <= cell               && values.max >= cell)
 				);
 			},
 
 
-			"_fnIsValidDate": function (date) {
+			isValidDate: function (date) {
 				return Object.prototype.toString.call(date) === '[object Date]' && !isNaN(date.getTime());
 			},
 
 
 
-			"_fnGetRange": function (range) {
+			getRange: function (range) {
 				var newRange = [],
 					isMin = false,
 					isMax = false;
@@ -376,8 +373,8 @@
 				}
 
 				if ($.isArray(range)) {
-					isMin = this._fnHasRange('min', range);
-					isMax = this._fnHasRange('max', range);
+					isMin = this.hasRange('min', range);
+					isMax = this.hasRange('max', range);
 
 					if (isMin && isMax) {
 						newRange = ['min', 'max'];
@@ -401,18 +398,18 @@
 				return newRange;
 			},
 
-			"_fnGetField": function (field) {
+			getField: function (field) {
 				var newField = $(field.field);
 
-				if (!field.field || newField.length == 0) {
-					newField = this._fnCreateField(field);
+				if (!field.field || newField.length === 0) {
+					newField = this.createField(field);
 				}
 
 				return newField;
 			},
 
 
-			_fnCreateField: function(field) {
+			createField: function(field) {
 				var j;
 
 				field.field = '';
@@ -429,12 +426,12 @@
 											field.advanced.field +
 											'<input type="number" id="' + field.id + '">';
 						} else {
-							if (this._fnHasRange('min', field.range)) {
+							if (this.hasRange('min', field.range)) {
 								field.field += '<label for="' + field.id.min + '">' + field.label.min + '</label>' +
 												'<input type="number" id="' + field.id.min + '">';
 							}
 
-							if (this._fnHasRange('max', field.range)) {
+							if (this.hasRange('max', field.range)) {
 								field.field += '<label for="' + field.id.max + '">' + field.label.max + '</label>' +
 												'<input type="number" id="' + field.id.max + '">';
 							}
@@ -492,12 +489,12 @@
 											field.advanced.field +
 											'<input type="date" id="' + field.id + '">';
 						} else {
-							if (this._fnHasRange('min', field.range)) {
+							if (this.hasRange('min', field.range)) {
 								field.field += '<label for="' + field.id.min + '">' + field.label.min + '</label>' +
 												'<input type="date" id="' + field.id.min + '">';
 							}
 
-							if (this._fnHasRange('max', field.range)) {
+							if (this.hasRange('max', field.range)) {
 								field.field += '<label for="' + field.id.max + '">' + field.label.max + '</label>' +
 												'<input type="date" id="' + field.id.max + '">';
 							}
@@ -505,7 +502,7 @@
 					break;
 
 					default:
-						throw( "Warning: CustomSearch init failed due to invalid field type given - " + field.type );
+						throw('Warning: CustomSearch init failed due to invalid field type given - ' + field.type);
 					break;
 				}
 
@@ -513,9 +510,9 @@
 					if (field.range.length === 0) {
 						field.field += '<a href="#" id="' + field.id + '_multiple">+</a>';
 					} else {
-						if (this._fnHasRange('min', field.range)) {
+						if (this.hasRange('min', field.range)) {
 							field.field += '<a href="#" id="' + field.id['min'] + '_multiple">+</a>';
-						} else if (this._fnHasRange('max', field.range)) {
+						} else if (this.hasRange('max', field.range)) {
 							field.field += '<a href="#" id="' + field.id['max'] + '_multiple">+</a>';
 						}
 					}
@@ -524,11 +521,11 @@
 				return field.field;
 			},
 
-			"_fnGetMultiple": function (multiple) {
-				return multiple == true;
+			getMultiple: function (multiple) {
+				return multiple === true;
 			},
 
-			"_fnGetId": function (index, range, field) {
+			getId: function (index, range, field) {
 				var baseId = this.s.dt.sInstance + '_' + index,
 					newId, fieldId;
 
@@ -536,11 +533,11 @@
 					newId = baseId;
 				} else {
 					newId = {};
-					if (this._fnHasRange('min', range)) {
+					if (this.hasRange('min', range)) {
 						newId.min = baseId + '_min';
 					}
 
-					if (this._fnHasRange('max', range)) {
+					if (this.hasRange('max', range)) {
 						newId.max = baseId + '_max';
 					}
 				}
@@ -559,7 +556,7 @@
 			},
 
 
-			_fnGetAdvanced: function (advanced, range, id, type) {
+			getAdvanced: function (advanced, range, id, type) {
 				var advancedField = '',
 					i,
 					advancedId = id + '_advanced',
@@ -576,7 +573,7 @@
 						options.push(['less', 'Is Less Than', false]);
 					}
 
-				if (advanced == true && range.length == 0) {
+				if (advanced === true && range.length === 0) {
 					advancedField += '<select id="' + advancedId + '">';
 
 					for (i = 0; i < options.length; i++) {
@@ -597,11 +594,11 @@
 				return {id: '', field: ''};
 			},
 
-			_fnGetServer: function (server, id) {
+			getServer: function (server, id) {
 				return server ? server : id;
 			},
 
-			"_fnGetLabel": function (label, range, columns) {
+			getLabel: function (label, range, columns) {
 				var newLabel = '',
 					j;
 
@@ -620,11 +617,11 @@
 					newLabel = label;
 				} else {
 					newLabel = {};
-					if (this._fnHasRange('min', range)) {
+					if (this.hasRange('min', range)) {
 						newLabel.min = 'Min ' + label;
 					}
 
-					if (this._fnHasRange('max', range)) {
+					if (this.hasRange('max', range)) {
 						newLabel.max = 'Max ' + label;
 					}
 				}
@@ -633,7 +630,7 @@
 			},
 
 
-			"_fnGetType": function (type, columns) {
+			getType: function (type, columns) {
 				var newType = type;
 
 				if (!newType) {
@@ -652,7 +649,7 @@
 			},
 
 
-			"_fnHasRange": function ( value, range ) {
+			hasRange: function ( value, range ) {
 				return $.inArray(value, range) >= 0;
 			}
 
