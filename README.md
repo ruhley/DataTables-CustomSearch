@@ -7,11 +7,7 @@ An extension to the jQuery plugin DataTables 1.10 (http://next.datatables.net) a
 
 ```javascript
 var table = $('table').dataTable();
-new $.fn.dataTable.CustomSearch(table, {
-  container: '#form',
-  hideStandardSearch: true,
-  fields: [0]
-});
+new $.fn.dataTable.CustomSearch(table);
 ```
 
 
@@ -175,3 +171,17 @@ Accepts: an array of strings or objects
 Requirements: ```type == 'select'```
 
 This will specify the options available in the select field. If the array item is an object then you need to specify the value and the text of the option. If it is a string then it counts for both. An 'All' option will always be put first with a value of ''.
+
+
+###Events
+
+####after
+Default: ```null```
+
+Optional
+
+Accepts: function
+
+Requirements: none
+
+Parameters: An array of the filtered data
