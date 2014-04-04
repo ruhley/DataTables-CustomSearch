@@ -16,6 +16,8 @@ new $.fn.dataTable.CustomSearch(table);
 ###container
 Can be a jQuery selector string or a jQuery object. Will be where the fields are appended to. If not passed in then it will prepend it to the DataTables wrapper (effectively putting it on top of the table).
 
+You can also specify ```'thead'```, ```'thead:before'```, ```'thead:after'```, ```'tfoot'```, ```'tfoot:before'``` or ```'tfoot:after'```. This will place the fields inside the table in the matching columns. If you omit :before or :after it will default to :before.
+
 ###hideStandardSearch
 Whether or not to hide the DataTables search field.
 
@@ -184,4 +186,4 @@ Accepts: function
 
 Requirements: none
 
-Parameters: An array of the filtered data
+Parameters: An array of the filtered data on the current page, An array of all the filtered data, All the data

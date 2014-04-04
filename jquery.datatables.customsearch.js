@@ -50,7 +50,7 @@
 			 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 			init: function (dt, config) {
 				var that = this,
-					i,
+					i, j, k,
 					id,
 					field,
 					form = [],
@@ -90,6 +90,7 @@
 					}
 
 					field.columns         = $.isArray(field.columns) ? field.columns : [field.columns];
+					field.columns.sort();
 					field.multiple        = this.getMultiple(field.multiple);
 					field.type            = this.getType(field.type, field.columns);
 					field.range           = this.getRange(field.range);
@@ -99,7 +100,7 @@
 					field.server          = this.getServer(field.server, field.id);
 					field.caseInsensitive = field.caseInsensitive !== false;
 					field.smart           = field.smart === true;
-					field.field           = this.getField(field);
+					field                 = this.getField(field);
 
 					// makes sure the changes to the field are pushed back to the config
 					this.c.fields[i] = field;
@@ -116,18 +117,59 @@
 						allIds.push(field.advanced.id);
 					}
 
-					if (typeof field.field === 'string') {
-						form.push(field.field);
+					form.push(field.fullField);
+				}
+
+				this.c.fields.sort(this.sortBySubArray);
+
+				if (this.c.container == 'thead' || this.c.container == 'thead:before' || this.c.container == 'thead:after' ||
+					this.c.container == 'tfoot' || this.c.container == 'tfoot:before' || this.c.container == 'tfoot:after') {
+					var type = this.c.container.indexOf('thead') >= 0 ? 'thead' : 'tfoot';
+					var element = this.s.table.find(type);
+					var currentColumn = 0;
+					var sequentialCount = 1;
+					var method = 'prepend';
+					if (this.c.container == type + ':after') {
+						method = 'append';
 					}
-				}
 
-				if (!this.c.container) {
-					this.c.container = this.s.dt.nTableWrapper;
-				}
+					if (element.length === 0) {
+						this.s.table.append('<' + type + '>');
+					}
 
-				if (form.length > 0) {
-					if (this.c.container === this.s.dt.nTableWrapper) {
-						$(this.c.container).prepend('<div>' + form.join('') + '</div>');
+					element = this.s.table.find(type);
+					var row = $('<tr>').appendTo(element);
+
+
+					for (i = 0; i < this.c.fields.length; i++) {
+						for (j = 0; j < this.c.fields[i].columns.length; j++) {
+							while (this.c.fields[i].columns[j] > currentColumn) {
+								row[method]($('<td>'));
+								currentColumn++;
+							}
+
+							if (this.c.fields[i].columns.length === 1) {
+								row[method]($('<td>')[method](this.c.fields[i].field));
+							} else {
+								sequentialCount = 1;
+								for (k = j + 1; k < this.c.fields[i].columns.length; k++) {
+									if (this.c.fields[i].columns[k] == this.c.fields[i].columns[j] + 1) {
+										sequentialCount++;
+										currentColumn++;
+									} else {
+										break;
+									}
+								}
+								row[method]($('<td>').attr('colspan', sequentialCount)[method]($(this.c.fields[i].field)));
+								j = k;
+							}
+
+							currentColumn++;
+						}
+					}
+				} else {
+					if (!this.c.container) {
+						$(this.s.dt.nTableWrapper).prepend('<div>' + form.join('') + '</div>');
 					} else {
 						$(this.c.container).append('<div>' + form.join('') + '</div>');
 					}
@@ -164,7 +206,8 @@
 					this.s.table.on('search.dt', function(evt, settings) {
 						var rows = settings.aiDisplay,
 							data = that.s.table.DataTable().data(),
-							passedData = [],
+							pagePassedData = [],
+							allPassedData = [],
 							i = settings._iDisplayStart,
 							to = settings._iDisplayStart + settings._iDisplayLength;
 
@@ -177,10 +220,14 @@
 						}
 
 						for (; i < to; i++) {
-							passedData.push(data[rows[i]]);
+							pagePassedData.push(data[rows[i]]);
 						}
 
-						that.c.after(passedData);
+						for (i = 0; i < rows.length; i++) {
+							allPassedData.push(data[rows[i]]);
+						}
+
+						that.c.after(pagePassedData, allPassedData, data);
 					});
 				}
 			},
@@ -307,6 +354,8 @@
 						return true;
 					} else if (advanced == 'less' && stringNumber < searchNumber) {
 						return true;
+					} else if (advanced == 'begins' && string.indexOf(search[i]) === 0) {
+						return true;
 					}
 				}
 
@@ -410,37 +459,45 @@
 
 
 			createField: function(field) {
-				var j;
+				var i;
 
-				field.field = '';
+				field.fieldLabel = [];
+				field.field = [];
 
 				switch (field.type) {
 					case 'string':
-						field.field = '<label for="' + field.id + '">' + field.label + '</label>' +
-										field.advanced.field +
-										'<input type="text" id="' + field.id + '">';
+						if (field.label) {
+							field.fieldLabel = '<label for="' + field.id + '">' + field.label + '</label>';
+						}
+						field.field = field.advanced.field + '<input type="text" id="' + field.id + '">';
 					break;
 					case 'number':
 						if (field.range.length === 0) {
-							field.field = '<label for="' + field.id + '">' + field.label + '</label>' +
-											field.advanced.field +
-											'<input type="number" id="' + field.id + '">';
+							if (field.label) {
+								field.fieldLabel = '<label for="' + field.id + '">' + field.label + '</label>';
+							}
+							field.field = field.advanced.field + '<input type="number" id="' + field.id + '">';
 						} else {
 							if (this.hasRange('min', field.range)) {
-								field.field += '<label for="' + field.id.min + '">' + field.label.min + '</label>' +
-												'<input type="number" id="' + field.id.min + '">';
+								if (field.label) {
+									field.fieldLabel.push('<label for="' + field.id.min + '">' + field.label.min + '</label>');
+								}
+								field.field.push('<input type="number" id="' + field.id.min + '">');
 							}
 
 							if (this.hasRange('max', field.range)) {
-								field.field += '<label for="' + field.id.max + '">' + field.label.max + '</label>' +
-												'<input type="number" id="' + field.id.max + '">';
+								if (field.label) {
+									field.fieldLabel.push('<label for="' + field.id.max + '">' + field.label.max + '</label>');
+								}
+								field.field.push('<input type="number" id="' + field.id.max + '">');
 							}
 						}
 					break;
 					case 'select':
-						field.field = '<label for="' + field.id + '">' + field.label + '</label>' +
-										field.advanced.field +
-										'<select id="' + field.id + '"';
+						if (field.label) {
+							field.fieldLabel = '<label for="' + field.id + '">' + field.label + '</label>';
+						}
+						field.field = field.advanced.field + '<select id="' + field.id + '"';
 
 						if (field.multiple) {
 							field.field += ' multiple="multiple"';
@@ -472,11 +529,11 @@
 							}
 						}
 
-						for (j = 0; j < field.options.length; j++) {
-							if (typeof field.options[j] === 'object') {
-								field.field += '<option value="' + field.options[j].value + '">' + field.options[j].text + '</option>';
+						for (i = 0; i < field.options.length; i++) {
+							if (typeof field.options[i] === 'object') {
+								field.field += '<option value="' + field.options[i].value + '">' + field.options[i].text + '</option>';
 							} else {
-								field.field += '<option value="' + field.options[j] + '">' + field.options[j] + '</option>';
+								field.field += '<option value="' + field.options[i] + '">' + field.options[i] + '</option>';
 							}
 						}
 
@@ -485,18 +542,23 @@
 
 					case 'date':
 						if (field.range.length === 0) {
-							field.field = '<label for="' + field.id + '">' + field.label + '</label>' +
-											field.advanced.field +
-											'<input type="date" id="' + field.id + '">';
+							if (field.label) {
+								field.fieldLabel = '<label for="' + field.id + '">' + field.label + '</label>';
+							}
+							field.field = field.advanced.field + '<input type="date" id="' + field.id + '">';
 						} else {
 							if (this.hasRange('min', field.range)) {
-								field.field += '<label for="' + field.id.min + '">' + field.label.min + '</label>' +
-												'<input type="date" id="' + field.id.min + '">';
+								if (field.label) {
+									field.fieldLabel.push('<label for="' + field.id.min + '">' + field.label.min + '</label>');
+								}
+								field.field.push('<input type="date" id="' + field.id.min + '">');
 							}
 
 							if (this.hasRange('max', field.range)) {
-								field.field += '<label for="' + field.id.max + '">' + field.label.max + '</label>' +
-												'<input type="date" id="' + field.id.max + '">';
+								if (field.label) {
+									field.fieldLabel.push('<label for="' + field.id.max + '">' + field.label.max + '</label>');
+								}
+								field.field.push('<input type="date" id="' + field.id.max + '">');
 							}
 						}
 					break;
@@ -506,19 +568,19 @@
 					break;
 				}
 
-				/*if (field.multiple && field.type !== 'select') {
-					if (field.range.length === 0) {
-						field.field += '<a href="#" id="' + field.id + '_multiple">+</a>';
-					} else {
-						if (this.hasRange('min', field.range)) {
-							field.field += '<a href="#" id="' + field.id['min'] + '_multiple">+</a>';
-						} else if (this.hasRange('max', field.range)) {
-							field.field += '<a href="#" id="' + field.id['max'] + '_multiple">+</a>';
-						}
-					}
-				}*/
+				field.fullField = '';
 
-				return field.field;
+				if ($.isArray(field.field)) {
+					for (i = 0; i < field.field.length; i++) {
+						field.fullField += field.fieldLabel[i];
+						field.fullField += field.field[i];
+					}
+				} else {
+					field.fullField += field.fieldLabel;
+					field.fullField += field.field;
+				}
+
+				return field;
 			},
 
 			getMultiple: function (multiple) {
@@ -571,6 +633,8 @@
 					if (numerical) {
 						options.push(['greater', 'Is Greather Than', false]);
 						options.push(['less', 'Is Less Than', false]);
+					} else {
+						options.push(['begins', 'Begins With', false]);
 					}
 
 				if (advanced === true && range.length === 0) {
@@ -603,7 +667,7 @@
 					j;
 
 				// get the label from the column names if not given
-				if (!label) {
+				if (label === undefined) {
 					label = [];
 
 					for (j = 0; j < columns.length; j++) {
@@ -651,6 +715,22 @@
 
 			hasRange: function ( value, range ) {
 				return $.inArray(value, range) >= 0;
+			},
+
+
+			sortBySubArray: function ( a, b ) {
+				var minA = a.columns,
+					minB = b.columns;
+
+				if ($.isArray(minA)) {
+					minA = Math.min.apply(Math, minA);
+				}
+
+				if ($.isArray(minB)) {
+					minB = Math.min.apply(Math, minB);
+				}
+
+				return minA - minB;
 			}
 
 
