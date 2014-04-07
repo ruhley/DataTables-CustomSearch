@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <title>Datatables-CustomSearch by ruhley</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Datatables-CustomSearch</h1>
+        <h2>An extension to the jQuery plugin DataTables allowing you to specify custom search fields</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/ruhley/DataTables-CustomSearch/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/ruhley/DataTables-CustomSearch/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/ruhley/DataTables-CustomSearch" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>
+<a name="datatables-customsearch" class="anchor" href="#datatables-customsearch"><span class="octicon octicon-link"></span></a>DataTables-CustomSearch</h1>
+
+<p>An extension to the jQuery plugin DataTables 1.10 (<a href="http://next.datatables.net">http://next.datatables.net</a>) allowing you to specify custom search fields.</p>
+
+<h2>
+<a name="quick-example" class="anchor" href="#quick-example"><span class="octicon octicon-link"></span></a>Quick Example</h2>
+
+<div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">table</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'table'</span><span class="p">).</span><span class="nx">dataTable</span><span class="p">();</span>
+<span class="k">new</span> <span class="nx">$</span><span class="p">.</span><span class="nx">fn</span><span class="p">.</span><span class="nx">dataTable</span><span class="p">.</span><span class="nx">CustomSearch</span><span class="p">(</span><span class="nx">table</span><span class="p">);</span>
+</pre></div>
+
+<h2>
+<a name="options" class="anchor" href="#options"><span class="octicon octicon-link"></span></a>Options</h2>
+
+<h3>
+<a name="container" class="anchor" href="#container"><span class="octicon octicon-link"></span></a>container</h3>
+
+<p>Can be a jQuery selector string or a jQuery object. Will be where the fields are appended to. If not passed in then it will prepend it to the DataTables wrapper (effectively putting it on top of the table).</p>
+
+<p>You can also specify <code>'thead'</code>, <code>'thead:before'</code>, <code>'thead:after'</code>, <code>'tfoot'</code>, <code>'tfoot:before'</code> or <code>'tfoot:after'</code>. This will place the fields inside the table in the matching columns. If you omit :before or :after it will default to :before.</p>
+
+<h3>
+<a name="hidestandardsearch" class="anchor" href="#hidestandardsearch"><span class="octicon octicon-link"></span></a>hideStandardSearch</h3>
+
+<p>Whether or not to hide the DataTables search field.</p>
+
+<h3>
+<a name="fields" class="anchor" href="#fields"><span class="octicon octicon-link"></span></a>fields</h3>
+
+<p>An array of columns to give search fields. Starts at index of 0.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">fields</span><span class="o">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">]</span>
+</pre></div>
+
+<p>If an array is passed in as fields the field will search both columns using OR.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">fields</span><span class="o">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">],</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+
+<p>If you want to have more control then you need to pass in an object.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">fields</span><span class="o">:</span> <span class="p">[</span>
+  <span class="p">{</span>
+    <span class="nx">field</span><span class="o">:</span> <span class="s1">'#myField'</span><span class="p">,</span>
+    <span class="nx">columns</span><span class="o">:</span> <span class="mi">0</span>
+  <span class="p">},</span>
+  <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span>
+  <span class="p">{</span>
+    <span class="nx">label</span><span class="o">:</span> <span class="s1">'String Field'</span><span class="p">,</span>
+    <span class="nx">columns</span><span class="o">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">],</span>
+    <span class="nx">type</span><span class="o">:</span> <span class="s1">'string'</span>
+  <span class="p">},</span>
+  <span class="p">{</span>
+    <span class="nx">label</span><span class="o">:</span> <span class="s1">'Number Field'</span><span class="p">,</span>
+    <span class="nx">columns</span><span class="o">:</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="nx">type</span><span class="o">:</span> <span class="s1">'number'</span><span class="p">,</span>
+    <span class="nx">range</span><span class="o">:</span> <span class="p">[</span><span class="s1">'min'</span><span class="p">,</span><span class="s1">'max'</span><span class="p">]</span>
+  <span class="p">},</span>
+  <span class="p">{</span>
+    <span class="nx">type</span><span class="o">:</span> <span class="s1">'select'</span><span class="p">,</span>
+    <span class="nx">columns</span><span class="o">:</span> <span class="mi">7</span><span class="p">,</span>
+    <span class="nx">options</span><span class="o">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="nx">value</span><span class="o">:</span> <span class="s1">'a'</span><span class="p">,</span>
+        <span class="nx">text</span><span class="o">:</span> <span class="s1">'abc'</span>
+      <span class="p">},</span>
+      <span class="s1">'def'</span>
+    <span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+
+<h2>
+<a name="fields-options" class="anchor" href="#fields-options"><span class="octicon octicon-link"></span></a>Fields Options</h2>
+
+<h4>
+<a name="columns" class="anchor" href="#columns"><span class="octicon octicon-link"></span></a>columns</h4>
+
+<p>Default: <code>[]</code></p>
+
+<p>Required</p>
+
+<p>Accepts: number or array of numbers</p>
+
+<p>Requirements: none</p>
+
+<p>This will tie the field to the column(s) (starting with an index of 0).</p>
+
+<h4>
+<a name="field" class="anchor" href="#field"><span class="octicon octicon-link"></span></a>field</h4>
+
+<p>Default: ''</p>
+
+<p>Optional</p>
+
+<p>Accepts: jQuery selector string or jQuery object</p>
+
+<p>Requirements: none</p>
+
+<p>This will tie an existing field to search the column. If supplied the label, type, and options will be ignored.</p>
+
+<h4>
+<a name="label" class="anchor" href="#label"><span class="octicon octicon-link"></span></a>label</h4>
+
+<p>Default: Column Header (if a range then a concat of the column headers).</p>
+
+<p>Optional</p>
+
+<p>Accepts: string (plain text or html)</p>
+
+<p>Requirements: none</p>
+
+<p>The text in the <code>&lt;label&gt;</code> tag.</p>
+
+<h4>
+<a name="type" class="anchor" href="#type"><span class="octicon octicon-link"></span></a>type</h4>
+
+<p>Default: DataTables column types (<a href="https://next.datatables.net/reference/option/columns.type">https://next.datatables.net/reference/option/columns.type</a>)</p>
+
+<p>Optional</p>
+
+<p>Accepts: <code>'string', 'number', 'select', 'date'</code></p>
+
+<p>Requirements: none</p>
+
+<p>This specifies the type of field to create, and affects how it is searched.</p>
+
+<h4>
+<a name="range" class="anchor" href="#range"><span class="octicon octicon-link"></span></a>range</h4>
+
+<p>Default: <code>[]</code></p>
+
+<p>Optional</p>
+
+<p>Accepts: <code>[], ['min'], ['max'], ['min', 'max']</code></p>
+
+<p>Requirements: type is number or date</p>
+
+<p>This will create a min and/or max field that the column values will have to be between.</p>
+
+<h4>
+<a name="advanced" class="anchor" href="#advanced"><span class="octicon octicon-link"></span></a>advanced</h4>
+
+<p>Default: false</p>
+
+<p>Optional</p>
+
+<p>Accepts: boolean</p>
+
+<p>Requirements: none</p>
+
+<p>Puts a dropdown in from the of the field giving the user advanced searching options. It will have: contains, does not contain, is equal to, is not equal to. If the type is a number or range then it will give the options is greater than and is less than.</p>
+
+<h4>
+<a name="caseinsensitive" class="anchor" href="#caseinsensitive"><span class="octicon octicon-link"></span></a>caseInsensitive</h4>
+
+<p>Default: true</p>
+
+<p>Optional</p>
+
+<p>Accepts: boolean</p>
+
+<p>Requirements: none</p>
+
+<p>Whether or not string searches should be case sensitive or not.</p>
+
+<h4>
+<a name="server" class="anchor" href="#server"><span class="octicon octicon-link"></span></a>server</h4>
+
+<p>Default: <code>null</code></p>
+
+<p>Optional</p>
+
+<p>Accepts: string</p>
+
+<p>Requirements: dataTables serverSide is set to true</p>
+
+<p>If the dataTables serverSide option is set to true this plugin will automatically send the request. All fields will be added to the request using their id in the associative array customsearch. If you want a custom key in the array for the field then specify this field.</p>
+
+<h4>
+<a name="options-1" class="anchor" href="#options-1"><span class="octicon octicon-link"></span></a>options</h4>
+
+<p>Default: The distinct values in the column</p>
+
+<p>Optional</p>
+
+<p>Accepts: an array of strings or objects</p>
+
+<p>Requirements: <code>type == 'select'</code></p>
+
+<p>This will specify the options available in the select field. If the array item is an object then you need to specify the value and the text of the option. If it is a string then it counts for both. An 'All' option will always be put first with a value of ''.</p>
+
+<h3>
+<a name="events" class="anchor" href="#events"><span class="octicon octicon-link"></span></a>Events</h3>
+
+<h4>
+<a name="after" class="anchor" href="#after"><span class="octicon octicon-link"></span></a>after</h4>
+
+<p>Default: <code>null</code></p>
+
+<p>Optional</p>
+
+<p>Accepts: function</p>
+
+<p>Requirements: none</p>
+
+<p>Parameters: An array of the filtered data on the current page, An array of all the filtered data, All the data</p>
+      </section>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-49748480-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
