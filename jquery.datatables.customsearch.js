@@ -50,11 +50,19 @@
 			 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 			init: function (dt, config) {
 				var that = this,
-					i, j, k,
+					i,
+					j,
+					k,
 					id,
 					field,
 					form = [],
-					allIds = [];
+					allIds = [],
+					type,
+					element,
+					currentColumn,
+					sequentialCount,
+					method,
+					row;
 
 				this.s.dt = new DataTable.Api(dt).settings()[0];
 				this.s.init = config || {};
@@ -122,15 +130,16 @@
 
 				this.c.fields.sort(this.sortBySubArray);
 
-				if (this.c.container == 'thead' || this.c.container == 'thead:before' || this.c.container == 'thead:after' ||
-					this.c.container == 'tfoot' || this.c.container == 'tfoot:before' || this.c.container == 'tfoot:after') {
-					var type = this.c.container.indexOf('thead') >= 0 ? 'thead' : 'tfoot';
-					var element = this.s.table.find(type);
-					var currentColumn = 0;
-					var sequentialCount = 1;
-					var method = 'prepend';
-					if (this.c.container == type + ':after') {
-						method = 'append';
+				if (this.c.container === 'thead' || this.c.container === 'thead:before' || this.c.container === 'thead:after' ||
+					this.c.container === 'tfoot' || this.c.container === 'tfoot:before' || this.c.container === 'tfoot:after') {
+					type = this.c.container.indexOf('thead') >= 0 ? 'thead' : 'tfoot';
+					element = this.s.table.find(type);
+					currentColumn = 0;
+					sequentialCount = 1;
+					method = 'prependTo';
+
+					if (this.c.container === type + ':after') {
+						method = 'appendTo';
 					}
 
 					if (element.length === 0) {
@@ -138,29 +147,29 @@
 					}
 
 					element = this.s.table.find(type);
-					var row = $('<tr>').appendTo(element);
+					row = $('<tr>')[method](element);
 
 
 					for (i = 0; i < this.c.fields.length; i++) {
 						for (j = 0; j < this.c.fields[i].columns.length; j++) {
 							while (this.c.fields[i].columns[j] > currentColumn) {
-								row[method]($('<td>'));
+								row.append($('<td>'));
 								currentColumn++;
 							}
 
 							if (this.c.fields[i].columns.length === 1) {
-								row[method]($('<td>')[method](this.c.fields[i].field));
+								row.append($('<td>').append(this.c.fields[i].field));
 							} else {
 								sequentialCount = 1;
 								for (k = j + 1; k < this.c.fields[i].columns.length; k++) {
-									if (this.c.fields[i].columns[k] == this.c.fields[i].columns[j] + 1) {
+									if (this.c.fields[i].columns[k] === this.c.fields[i].columns[j] + 1) {
 										sequentialCount++;
 										currentColumn++;
 									} else {
 										break;
 									}
 								}
-								row[method]($('<td>').attr('colspan', sequentialCount)[method]($(this.c.fields[i].field)));
+								row.append($('<td>').attr('colspan', sequentialCount).append($(this.c.fields[i].field)));
 								j = k;
 							}
 
@@ -180,7 +189,7 @@
 						var ajax = that.s.dt.ajax;
 
 						if (typeof ajax === 'string') {
-							ajax = {url:ajax, data:{}};
+							ajax = {url: ajax, data: {}};
 						}
 
 						ajax.data.customsearch = {};
@@ -203,7 +212,7 @@
 				}
 
 				if ($.isFunction(this.c.after)) {
-					this.s.table.on('search.dt', function(evt, settings) {
+					this.s.table.on('search.dt', function (evt, settings) {
 						var rows = settings.aiDisplay,
 							data = that.s.table.DataTable().data(),
 							pagePassedData = [],
