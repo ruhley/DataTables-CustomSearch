@@ -9,9 +9,76 @@
 		<script type="text/javascript" src="../../jquery.datatables.customsearch.min.js"></script>
 		<script type="text/javascript">
 			$(document).ready(function(){
+				var rows = [];
+
+				for (var i = 0; i < 2500; i++) {
+					rows.push('<tr>');
+					rows.push('<td>' + generateName() + '</td>');
+					rows.push('<td>' + generateName() + '</td>');
+					rows.push('<td>' + generateAge() + '</td>');
+					rows.push('<td>' + generateDate() + '</td>');
+					rows.push('<td>' + generateCurrency() + '</td>');
+					rows.push('<td>' + generateBoolean() + '</td>');
+					rows.push('<td>' + generateRace() + '</td>');
+					rows.push('</tr>');
+				}
+				$('tbody').append(rows.join(''));
+
+
 				var table = $('table').dataTable();
 
 				new $.fn.dataTable.CustomSearch(table);
+
+
+				function generateName() {
+					var length = random(3, 10),
+						vowels = ['a', 'e', 'i', 'o', 'u'],
+						consonants = ['b', 'c', 'd', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z'],
+						name = '',
+						i = 1;
+
+					for(; i <= length; i++) {
+						if (i % 2 == 0) {
+							name += vowels[random(0, vowels.length - 1)];
+						} else {
+							name += consonants[random(0, consonants.length - 1)];
+						}
+					}
+
+					return name;
+				}
+
+				function generateAge() {
+					return random(18, 111);
+				}
+
+				function generateDate() {
+					return random(1988, 2014) . '/' . random(1, 12) . '/' . random(1, 30);
+				}
+
+				function generateCurrency() {
+					return '$' . random(0, 20000);
+				}
+
+				function generateBoolean() {
+					return random(0, 1) == 1 ? "Yes" : "No";
+				}
+
+				function generateRace() {
+					var races = [
+						'Mongoloid',
+						'Caucasoid',
+						'Australoid',
+						'Negroid',
+						'Capoid'
+					];
+
+					return races[random(0, races.length - 1)];
+				}
+
+				function random(min, max) {
+					Math.floor(Math.random() * ((max - min) + 1) + min);
+				}
 			});
 		</script>
 	</head>
@@ -28,69 +95,7 @@
 					<th>Race</th>
 				</tr>
 			</thead>
-			<tbody>
-				<?php
-					for($i = 1; $i <= 2500; $i++) {
-						print "<tr>
-							<td>" . generateName() . "</td>
-							<td>" . generateName() . "</td>
-							<td>" . generateAge() . "</td>
-							<td>" . generateDate() . "</td>
-							<td>" . generateCurrency() . "</td>
-							<td>" . generateBoolean() . "</td>
-							<td>" . generateRace() . "</td>
-						</tr>";
-					}
-				?>
-			</tbody>
+			<tbody></tbody>
 		</table>
 	</body>
 </html>
-
-
-<?php
-	function generateName() {
-		$length = mt_rand(3, 10);
-		$vowels = array('a', 'e', 'i', 'o', 'u');
-		$consonants = array('b', 'c', 'd', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z');
-		$name = "";
-
-		for($i = 1; $i <= $length; $i++) {
-			if ($i % 2 == 0) {
-				$name .= $vowels[mt_rand(0, count($vowels) - 1)];
-			} else {
-				$name .= $consonants[mt_rand(0, count($vowels) - 1)];
-			}
-		}
-
-		return ucfirst($name);
-	}
-
-	function generateAge() {
-		return mt_rand(18, 111);
-	}
-
-	function generateDate() {
-		return mt_rand(1988, 2014) . '/' . mt_rand(1, 12) . '/' . mt_rand(1, 30);
-	}
-
-	function generateCurrency() {
-		return '$' . mt_rand(0, 20000);
-	}
-
-	function generateBoolean() {
-		return mt_rand(0, 1) == 1 ? "Yes" : "No";
-	}
-
-	function generateRace() {
-		$races = array(
-			'Mongoloid',
-			'Caucasoid',
-			'Australoid',
-			'Negroid',
-			'Capoid'
-		);
-
-		return $races[mt_rand(0, count($races) - 1)];
-	}
-?>
