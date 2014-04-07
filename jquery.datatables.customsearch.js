@@ -1,3 +1,4 @@
+/*! jQuery DataTables Custom Search Plugin - v0.8 (2014-04-07) | Copyright 2014 Timothy Ruhle; Licensed MIT */
 (function (window, document, undefined) {
 	'use strict';
 
