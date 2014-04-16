@@ -1,12 +1,13 @@
 <!DOCTYPE HTML>
 <html>
 	<head>
-		<title>Example 02 - Advanced</title>
+		<title>Example 06 - Thead Advanced</title>
 
 		<link type="text/css" rel="stylesheet" href="//cdn.datatables.net/1.10.0-beta.2/css/jquery.dataTables.css">
 		<link type="text/css" rel="stylesheet" href="//code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
 		<link type="text/css" rel="stylesheet" href="../resources/SyntaxHighlighter/shCore.css">
 		<link type="text/css" rel="stylesheet" href="../resources/SyntaxHighlighter/shThemeDefault.css">
+		<link type="text/css" rel="stylesheet" href="../resources/Chosen/chosen.min.css">
 
 		<script type="text/javascript" src="//code.jquery.com/jquery-2.1.0.js"></script>
 		<script type="text/javascript" src="//cdn.datatables.net/1.10.0-beta.2/js/jquery.dataTables.js"></script>
@@ -14,41 +15,28 @@
 		<script type="text/javascript" src="../resources/SyntaxHighlighter/shCore.js"></script>
 		<script type="text/javascript" src="../resources/SyntaxHighlighter/shBrushJScript.js"></script>
 		<script type="text/javascript" src="../resources/SyntaxHighlighter/shBrushXml.js"></script>
-		<script type="text/javascript" src="../../jquery.datatables.customsearch.min.js"></script>
+		<script type="text/javascript" src="../resources/Chosen/chosen.jquery.min.js"></script>
+		<script type="text/javascript" src="../../jquery.datatables.customsearch.js"></script>
 		<script type="text/javascript">
 			$(document).ready(function(){
 				$('#dataTable').dataTable({
 					ajax: '../resources/table-data.json'
 				}).customSearch({
-					container: '#container',
+					container: 'thead:after',
 					fields: [
-						[0,1],
-						{
-							columns: 2,
-							type: 'number',
-							range: ['min', 'max'],
-							label: 'Age'
-						},
 						{
 							columns: 3,
-							range: ['max']
-						},
-						{
+							type: 'select'
+						},{
+							columns: [0,1],
+							type: 'select'
+						},{
+							columns: 2,
+							type: 'select'
+						},{
 							columns: 4,
-							range: ['min']
-						},
-						{
-							columns: 5,
-							type: 'select',
-							options: [
-								'Yes',
-								{
-									value: 'No',
-									text: 'Nope'
-								}
-							]
-						},
-						{
+							range: true
+						},{
 							columns: 6,
 							type: 'select'
 						}
@@ -78,8 +66,6 @@
 			<tbody></tbody>
 		</table>
 
-		<div id="container"></div>
-
 		<div id="code">
 			<ul>
 				<li><a href="#code-js">Javascript</a></li>
@@ -93,40 +79,26 @@
 					$('table').dataTable({
 						ajax: '../resources/table-data.json'
 					}).customSearch({
-					container: '#container',
-					fields: [
-						[0,1],
-						{
-							columns: 2,
-							type: 'number',
-							range: ['min', 'max'],
-							label: 'Age'
-						},
-						{
-							columns: 3,
-							range: ['max']
-						},
-						{
-							columns: 4,
-							range: ['min']
-						},
-						{
-							columns: 5,
-							type: 'select',
-							options: [
-								'Yes',
-								{
-									value: 'No',
-									text: 'Nope'
-								}
-							]
-						},
-						{
-							columns: 6,
-							type: 'select'
-						}
-					]
-				});
+						container: 'thead:after',
+						fields: [
+							{
+								columns: 3,
+								type: 'select'
+							},{
+								columns: [0,1],
+								type: 'select'
+							},{
+								columns: 2,
+								type: 'select'
+							},{
+								columns: 4,
+								range: true
+							},{
+								columns: 6,
+								type: 'select'
+							}
+						]
+					});
 				</pre>
 
 				<p>The following Javascript libraries were used for this example</p>
@@ -153,8 +125,6 @@
 						</thead>
 						<tbody></tbody>
 					</table>
-
-					<div id="container"></div>
 				</pre>
 			</div>
 

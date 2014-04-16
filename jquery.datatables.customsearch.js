@@ -1,10 +1,11 @@
-/*! jQuery DataTables Custom Search Plugin - v0.8 (2014-04-07) | Copyright 2014 Timothy Ruhle; Licensed MIT */
+/*! jQuery DataTables Custom Search Plugin - v0.8.5 (2014-04-07) | Copyright 2014 Timothy Ruhle; Licensed MIT */
 (function (window, document, undefined) {
 	'use strict';
 
 	var factory = function ($, DataTable) {
 
 		var CustomSearch = function (oDT, oConfig) {
+			var that = this;
 
 			// Sanity check that we are a new instance
 			if (!(this instanceof CustomSearch)) {
@@ -25,7 +26,7 @@
 			this.c = {
 				fields: [],
 				container: '',
-				hideStandardSearch: false
+				hideStandardSearch: true
 			};
 
 			/**
@@ -39,7 +40,9 @@
 
 
 			// Run constructor logic
-			this.init(oDT, oConfig);
+			$(oDT).on('init.dt', function() {
+				that.init(oDT, oConfig);
+			});
 
 			// Return this for chaining
 			return this;
@@ -57,7 +60,6 @@
 					id,
 					field,
 					form = [],
-					allIds = [],
 					type,
 					element,
 					currentColumn,
@@ -102,37 +104,47 @@
 					field.columns.sort();
 					field.multiple        = this.getMultiple(field.multiple);
 					field.type            = this.getType(field.type, field.columns);
+					field.dataType        = this.getDataType(field.columns);
 					field.range           = this.getRange(field.range);
-					field.label           = this.getLabel(field.label, field.range, field.columns);
-					field.id              = this.getId(i, field.range, field.field);
+					field.slider          = field.slider === true && this.hasRange('min', field.range) && this.hasRange('max', field.range);
+					field.label           = this.getLabel(field.label, field.range, field.columns, field.slider);
+					field.id              = this.getId(i, field.range, field.field, field.slider);
 					field.advanced        = this.getAdvanced(field.advanced, field.range, field.id, field.type);
 					field.server          = this.getServer(field.server, field.id);
 					field.caseInsensitive = field.caseInsensitive !== false;
 					field.smart           = field.smart === true;
+					field.autocomplete    = field.autocomplete === true;
+					field.chosen          = field.chosen === true;
+					field.trigger         = field.trigger === 'key' ? 'keyup' : 'change';
 					field                 = this.getField(field);
 
 					// makes sure the changes to the field are pushed back to the config
 					this.c.fields[i] = field;
-
-					if (field.range.length === 0) {
-						allIds.push(field.id);
-					} else {
-						for (id in field.id) {
-							allIds.push(field.id[id]);
-						}
-					}
-
-					if (field.advanced && field.advanced.id) {
-						allIds.push(field.advanced.id);
-					}
 
 					form.push(field.fullField);
 				}
 
 				this.c.fields.sort(this.sortBySubArray);
 
-				if (this.c.container === 'thead' || this.c.container === 'thead:before' || this.c.container === 'thead:after' ||
-					this.c.container === 'tfoot' || this.c.container === 'tfoot:before' || this.c.container === 'tfoot:after') {
+				if (this.c.container === 'thead' || this.c.container === 'tfoot') {
+					type = this.c.container.indexOf('thead') >= 0 ? 'thead' : 'tfoot';
+					element = this.s.table.find(type);
+					row = element.find('tr');
+					if (element.length === 0) {
+						this.s.table.append('<' + type + '>');
+						element = this.s.table.find(type);
+						row = $('<tr>').appendTo(element);
+
+						for (i = 0; i < this.s.dt.aoColumns.length; i++) {
+							row.append($('<th>').toggle(this.s.dt.aoColumns[i].bVisible));
+						}
+					}
+
+					for (i = 0; i < this.c.fields.length; i++) {
+						row.find('th').eq(this.c.fields[i].columns[0]).append(this.c.fields[i].field);
+					}
+				} else if (this.c.container === 'thead:before' || this.c.container === 'thead:after' ||
+					this.c.container === 'tfoot:before' || this.c.container === 'tfoot:after') {
 					type = this.c.container.indexOf('thead') >= 0 ? 'thead' : 'tfoot';
 					element = this.s.table.find(type);
 					currentColumn = 0;
@@ -185,30 +197,66 @@
 					}
 				}
 
-				$('#' + allIds.join(',#')).change(function () {
-					if (that.s.dt.oInit.serverSide) {
-						var ajax = that.s.dt.ajax;
+				for (i = 0; i < this.c.fields.length; i++) {
+					field = this.c.fields[i];
+					if (field.autocomplete) {
+						$('#' + field.id).autocomplete({
+							source: that.getDistinctValuesInColumn(field.columns, field.dataType, true),
+							select: function (evt, ui) {
+								$(this).val(ui.item.label);
+								that.triggerSearch();
+							}
+						})[field.trigger](function() {
+							that.triggerSearch();
+						});;
+					} else if (field.slider) {
+						var j = this.getDistinctValuesInColumn(field.columns, field.dataType, true);
+						$('#' + field.id).slider({
+							min: that.intParse(j[0]),
+							max: that.intParse(j[j.length - 1]),
+							values: [that.intParse(j[0]), that.intParse(j[j.length - 1])],
+							range: true,
+							slide: function(evt, ui) {
+								$('#' + this.id + '_display').text(ui.values[0] + ' - ' + ui.values[1]);
+								that.triggerSearch();
+							}
+						});
 
-						if (typeof ajax === 'string') {
-							ajax = {url: ajax, data: {}};
+						$('#' + field.id + '_display').text(j[0] + ' - ' + j[j.length - 1]);
+					} else {
+						id = [];
+						if (field.range.length === 0) {
+							id.push(field.id);
+						} else {
+							for (j in field.id) {
+								id.push(field.id[j]);
+							}
+						}
+						$('#' + id.join(',#'))[field.trigger](function() {
+							that.triggerSearch();
+						});
+
+						if (field.chosen) {
+							$('#' + id.join(',#')).chosen({
+								allow_single_deselect: true,
+								width: '100%'
+							});
 						}
 
-						ajax.data.customsearch = {};
-
-						for (i = 0; i < that.c.fields.length; i++) {
-							ajax.data.customsearch[that.c.fields[i].server] = $('#' + that.c.fields[i].id).val();
+						if (field.type === 'switch') {
+							$('#' + field.id).buttonset();
 						}
-
-						that.s.dt.ajax = ajax;
 					}
-
-					that.s.table.DataTable().draw();
-				});
+				}
 
 
 				if (!this.s.dt.oInit.serverSide) {
 					this.s.table.dataTable().DataTable.ext.search.push(function (settings, data, dataIndex) {
-						return that.search(settings, data, dataIndex);
+						if (settings.nTable.id === that.s.dt.nTable.id) {
+							return that.search(settings, data, dataIndex);
+						}
+
+						return true;
 					});
 				}
 
@@ -254,8 +302,16 @@
 						advancedValue = false;
 					}
 
+
 					if (field.range.length === 0) {
-						value = $('#' + field.id).val();
+						if (field.type === 'switch') {
+							value = [];
+							$('#' + field.id + ' input:checked').each(function() {
+								value.push($(this).val());
+							});
+						} else {
+							value = $('#' + field.id).val();
+						}
 
 						if (!value) {
 							value = '';
@@ -287,28 +343,45 @@
 							}
 						}
 					} else {
-						values = {
-							min: this.hasRange('min', field.range) ? $('#' + field.id.min).val() : '',
-							max: this.hasRange('max', field.range) ? $('#' + field.id.max).val() : ''
-						};
-
-						pass = false;
-						for (j = 0; j < field.columns.length; j++) {
-							if (field.type == 'date') {
-								if (this.searchDateRange(data[field.columns[j]], values)) {
-									pass = true;
-									break;
-								}
-							} else {
-								if (this.searchNumberRange(data[field.columns[j]], values)) {
-									pass = true;
-									break;
-								}
+						if (field.slider) {
+							values = {
+								min: $('#' + field.id).slider('values', 0),
+								max: $('#' + field.id).slider('values', 1)
 							}
+						} else {
+							values = {
+								min: this.hasRange('min', field.range) ? $('#' + field.id.min).val() : '',
+								max: this.hasRange('max', field.range) ? $('#' + field.id.max).val() : ''
+							};
 						}
 
-						if (pass === false) {
-							return false;
+						if (!values.min) {
+							values.min = '';
+						}
+
+						if (!values.max) {
+							values.max = '';
+						}
+
+						if (values.min || values.max) {
+							pass = false;
+							for (j = 0; j < field.columns.length; j++) {
+								if (field.type == 'date') {
+									if (this.searchDateRange(data[field.columns[j]], values)) {
+										pass = true;
+										break;
+									}
+								} else {
+									if (this.searchNumberRange(data[field.columns[j]], values)) {
+										pass = true;
+										break;
+									}
+								}
+							}
+
+							if (pass === false) {
+								return false;
+							}
 						}
 					}
 				}
@@ -339,7 +412,7 @@
 					string = string.toLowerCase();
 				}
 
-				stringNumber = parseInt(string, 10);
+				stringNumber = this.intParse(string);
 
 				if (!$.isArray(search)) {
 					search = [search];
@@ -350,7 +423,7 @@
 						search[i] = search[i].toLowerCase();
 					}
 
-					searchNumber = parseInt(search[i], 10);
+					searchNumber = this.intParse(search[i]);
 
 					if ((!advanced || advanced == 'contains') && string.search(search[i]) != -1) {
 						return true;
@@ -375,9 +448,9 @@
 			},
 
 			searchNumberRange: function (cell, values) {
-				cell = parseInt(cell.replace(/[^\d]/i, ''), 10);
-				values.min = parseInt(values.min, 10);
-				values.max = parseInt(values.max, 10);
+				cell = this.intParse(cell.toString().replace(/[^\d]/i, ''));
+				values.min = this.intParse(values.min);
+				values.max = this.intParse(values.max);
 
 				if (isNaN(cell)) {
 					return false;
@@ -469,7 +542,8 @@
 
 
 			createField: function(field) {
-				var i;
+				var i,
+					t;
 
 				field.fieldLabel = [];
 				field.field = [];
@@ -482,24 +556,31 @@
 						field.field = field.advanced.field + '<input type="text" id="' + field.id + '">';
 					break;
 					case 'number':
+					case 'date':
 						if (field.range.length === 0) {
 							if (field.label) {
 								field.fieldLabel = '<label for="' + field.id + '">' + field.label + '</label>';
 							}
-							field.field = field.advanced.field + '<input type="number" id="' + field.id + '">';
-						} else {
-							if (this.hasRange('min', field.range)) {
-								if (field.label) {
-									field.fieldLabel.push('<label for="' + field.id.min + '">' + field.label.min + '</label>');
-								}
-								field.field.push('<input type="number" id="' + field.id.min + '">');
-							}
 
-							if (this.hasRange('max', field.range)) {
-								if (field.label) {
-									field.fieldLabel.push('<label for="' + field.id.max + '">' + field.label.max + '</label>');
+							field.field = field.advanced.field + '<input type="' + field.type + '" id="' + field.id + '">';
+						} else {
+							if (field.slider) {
+								field.fieldLabel = '<label for="' + field.id + '">' + field.label + '</label>';
+								field.field = field.advanced.field + '<div id="' + field.id + '"></div><div id="' + field.id + '_display"></div>';
+							} else {
+								if (this.hasRange('min', field.range)) {
+									if (field.label) {
+										field.fieldLabel.push('<label for="' + field.id.min + '">' + field.label.min + '</label>');
+									}
+									field.field.push('<input type="' + field.type + '" id="' + field.id.min + '">');
 								}
-								field.field.push('<input type="number" id="' + field.id.max + '">');
+
+								if (this.hasRange('max', field.range)) {
+									if (field.label) {
+										field.fieldLabel.push('<label for="' + field.id.max + '">' + field.label.max + '</label>');
+									}
+									field.field.push('<input type="' + field.type + '" id="' + field.id.max + '">');
+								}
 							}
 						}
 					break;
@@ -507,6 +588,11 @@
 						if (field.label) {
 							field.fieldLabel = '<label for="' + field.id + '">' + field.label + '</label>';
 						}
+
+						if (!$.isArray(field.options) || field.options.length === 0) {
+							field.options = this.getDistinctValuesInColumn(field.columns, field.dataType, true);
+						}
+
 						field.field = field.advanced.field + '<select id="' + field.id + '"';
 
 						if (field.multiple) {
@@ -515,28 +601,11 @@
 
 						field.field += '>';
 
-						if (!$.isArray(field.options) || field.options.length === 0) {
-							if (field.multiple) {
-								field.options = [];
-							} else {
-								field.options = [{
-									value: '',
-									text: 'All'
-								}];
-							}
-
-							$.each(this.s.dt.aoData, function (index, row) {
-								if ($.inArray(row._aData[field.columns], field.options) === -1) {
-									field.options.push(row._aData[field.columns]);
-								}
+						if (!field.multiple) {
+							field.options.unshift({
+								value: '',
+								text: field.chosen ? '' : 'All'
 							});
-						} else {
-							if (!field.multiple) {
-								field.options.unshift({
-									value: '',
-									text: 'All'
-								});
-							}
 						}
 
 						for (i = 0; i < field.options.length; i++) {
@@ -550,27 +619,25 @@
 						field.field += '</select>';
 					break;
 
-					case 'date':
-						if (field.range.length === 0) {
-							if (field.label) {
-								field.fieldLabel = '<label for="' + field.id + '">' + field.label + '</label>';
-							}
-							field.field = field.advanced.field + '<input type="date" id="' + field.id + '">';
-						} else {
-							if (this.hasRange('min', field.range)) {
-								if (field.label) {
-									field.fieldLabel.push('<label for="' + field.id.min + '">' + field.label.min + '</label>');
-								}
-								field.field.push('<input type="date" id="' + field.id.min + '">');
-							}
+					case 'switch':
+						if (!$.isArray(field.options) || field.options.length === 0) {
+							field.options = this.getDistinctValuesInColumn(field.columns, field.dataType, true);
+						}
 
-							if (this.hasRange('max', field.range)) {
-								if (field.label) {
-									field.fieldLabel.push('<label for="' + field.id.max + '">' + field.label.max + '</label>');
-								}
-								field.field.push('<input type="date" id="' + field.id.max + '">');
+						for (i = 0; i < field.options.length; i++) {
+							if (typeof field.options[i] === 'object') {
+								field.field.push('<input type="checkbox" id="' + field.id + '_' + i + '" name="' + field.id + '"' + field.options[i].value + '>');
+								field.field.push('<label for="' + field.id + '_' + i + '">' + field.options[i].text + '</label>');
+							} else {
+								field.field.push('<input type="checkbox" id="' + field.id + '_' + i + '" name="' + field.id + '" value="' + field.options[i] + '">');
+								field.field.push('<label for="' + field.id + '_' + i + '">' + field.options[i] + '</label>');
 							}
 						}
+
+						field.field.unshift('<div id="' + field.id + '">');
+						field.field.push('</div>');
+
+						field.field = field.field.join('');
 					break;
 
 					default:
@@ -593,15 +660,53 @@
 				return field;
 			},
 
+
+			getDistinctValuesInColumn: function (columns, dataType, sort) {
+				var options = [],
+					that = this;
+
+				$.each(this.s.dt.aoData, function (index, row) {
+					var data = [];
+
+					if ($.isArray(columns)) {
+						for (var i = 0; i < columns.length; i++) {
+							data.push(row._aData[columns[i]]);
+						};
+					} else {
+						data.push(row._aData[columns]);
+					}
+
+					data = data.join(' ');
+
+					if ($.inArray(data, options) === -1) {
+						options.push(data);
+					}
+				});
+
+				if (sort) {
+					if (dataType === 'string' || dataType === 'date') {
+						options.sort();
+					} else {
+						options.sort(function(a, b){ return that.intParse(a) - that.intParse(b); });
+					}
+				}
+
+				return options;
+			},
+
 			getMultiple: function (multiple) {
 				return multiple === true;
 			},
 
-			getId: function (index, range, field) {
+			intParse: function(number) {
+				return parseInt(number.toString().replace(/[^\d]/i, ''), 10);
+			},
+
+			getId: function (index, range, field, slider) {
 				var baseId = this.s.dt.sInstance + '_' + index,
 					newId, fieldId;
 
-				if (range.length === 0) {
+				if (range.length === 0 || slider) {
 					newId = baseId;
 				} else {
 					newId = {};
@@ -672,7 +777,7 @@
 				return server ? server : id;
 			},
 
-			getLabel: function (label, range, columns) {
+			getLabel: function (label, range, columns, slider) {
 				var newLabel = '',
 					j;
 
@@ -687,7 +792,7 @@
 					label = label.join(' & ');
 				}
 
-				if (range.length === 0) {
+				if (range.length === 0 || slider) {
 					newLabel = label;
 				} else {
 					newLabel = {};
@@ -722,6 +827,20 @@
 				return newType.toLowerCase();
 			},
 
+			getDataType: function (columns) {
+				var newDataType = 'string';
+
+				if (columns.length == 1) {
+					newDataType = this.s.dt.aoColumns[columns[0]].sType;
+
+					if (newDataType == 'num' || newDataType == 'currency' || newDataType == 'num-fmt') {
+						newDataType = 'number';
+					}
+				}
+
+				return newDataType.toLowerCase();
+			},
+
 
 			hasRange: function ( value, range ) {
 				return $.inArray(value, range) >= 0;
@@ -741,6 +860,27 @@
 				}
 
 				return minA - minB;
+			},
+
+
+			triggerSearch: function() {
+				if (this.s.dt.oInit.serverSide) {
+					var ajax = this.s.dt.ajax;
+
+					if (typeof ajax === 'string') {
+						ajax = {url: ajax, data: {}};
+					}
+
+					ajax.data.customsearch = {};
+
+					for (j = 0; j < this.c.fields.length; j++) {
+						ajax.data.customsearch[this.c.fields[j].server] = $('#' + this.c.fields[j].id).val();
+					}
+
+					this.s.dt.ajax = ajax;
+				}
+
+				this.s.table.DataTable().draw();
 			}
 
 
@@ -757,7 +897,14 @@
 	if (typeof define === 'function' && define.amd) { // Define as an AMD module if possible
 		define('datatables-customsearch', ['jquery', 'datatables'], factory);
 	} else if ( jQuery && !jQuery.fn.dataTable.CustomSearch ) { // Otherwise simply initialise as normal, stopping multiple evaluation
-		factory( jQuery, jQuery.fn.dataTable );
+		factory(jQuery, jQuery.fn.dataTable);
 	}
+
+	$.fn.customSearch = function (options_arg) {
+		$(this.selector).each(function(index, value) {
+			new $.fn.dataTable.CustomSearch(this, options_arg);
+		});
+		return this;
+	};
 
 } (window, document));

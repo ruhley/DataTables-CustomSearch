@@ -16,10 +16,10 @@ new $.fn.dataTable.CustomSearch(table);
 ###container
 Can be a jQuery selector string or a jQuery object. Will be where the fields are appended to. If not passed in then it will prepend it to the DataTables wrapper (effectively putting it on top of the table).
 
-You can also specify ```'thead'```, ```'thead:before'```, ```'thead:after'```, ```'tfoot'```, ```'tfoot:before'``` or ```'tfoot:after'```. This will place the fields inside the table in the matching columns. If you omit :before or :after it will default to :before.
+You can also specify ```'thead'```, ```'thead:before'```, ```'thead:after'```, ```'tfoot'```, ```'tfoot:before'``` or ```'tfoot:after'```. This will place the fields inside the table in the matching columns.
 
 ###hideStandardSearch
-Whether or not to hide the DataTables search field.
+Whether or not to hide the DataTables search field. Defaults to true.
 
 ###fields
 An array of columns to give search fields. Starts at index of 0.
@@ -108,11 +108,11 @@ Default: DataTables column types (https://next.datatables.net/reference/option/c
 
 Optional
 
-Accepts: ```'string', 'number', 'select', 'date'```
+Accepts: ```'string', 'number', 'select', 'date', 'switch'```
 
 Requirements: none
 
-This specifies the type of field to create, and affects how it is searched.
+This specifies the type of field to create, and affects how it is searched. A switch is good for boolean fields.
 
 
 ####range
@@ -151,6 +151,18 @@ Requirements: none
 Whether or not string searches should be case sensitive or not.
 
 
+####trigger
+Default: ```'change'```
+
+Optional
+
+Accepts: ```'key'```
+
+Requirements: A text box field is being used
+
+The plugin defaults to triggering jQuery.change on fields for searching. If you set this to key then it will use jQuery.keyup.
+
+
 ####server
 Default: ```null```
 
@@ -173,6 +185,42 @@ Accepts: an array of strings or objects
 Requirements: ```type == 'select'```
 
 This will specify the options available in the select field. If the array item is an object then you need to specify the value and the text of the option. If it is a string then it counts for both. An 'All' option will always be put first with a value of ''.
+
+
+####autocomplete
+Default: false
+
+Optional
+
+Accepts: boolean
+
+Requirements: ```type == 'string'``` and jQuery UI autocomplete library
+
+This will change the text box to be a jQuery UI autocomplete field.
+
+
+####slider
+Default: false
+
+Optional
+
+Acceppts: boolean
+
+Requirements: ```type == 'number' OR type == 'date'``` and jQuery UI slider library
+
+This will replace the two fields with a slider that has two buttons
+
+
+####chosen
+Default: false
+
+Optional
+
+Accepts: boolean
+
+Requirements: ```type == 'select'``` and Chosen JS
+
+This will turn the drop down select box into a chosen select box
 
 
 ###Events
