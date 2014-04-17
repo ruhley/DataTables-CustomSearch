@@ -6,7 +6,7 @@ An extension to the jQuery plugin DataTables 1.10 (http://next.datatables.net) a
 ##Quick Example
 
 ```javascript
-var table = $('table').dataTable().customSearch();
+$('table').dataTable().customSearch();
 ```
 
 
