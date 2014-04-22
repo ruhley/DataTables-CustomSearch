@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 	<head>
-		<title>Example 08 - Multiple Tables</title>
+		<title>Example 09 - Multiple Tables</title>
 
 		<link type="text/css" rel="stylesheet" href="//cdn.datatables.net/1.10.0-beta.2/css/jquery.dataTables.css">
 		<link type="text/css" rel="stylesheet" href="//code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
@@ -24,6 +24,30 @@
 				}).customSearch();
 
 				$('#dataTable2').dataTable({
+					ajax: '../resources/table-data.json'
+				}).customSearch({
+					fields: [
+						{
+							columns: [0,1],
+							advanced: true,
+							caseInsensitive: false
+						},
+						{
+							columns: 2,
+							advanced: true,
+						},
+						{
+							columns: 3,
+							advanced: true
+						},
+						{
+							columns: 4,
+							advanced: true
+						}
+					]
+				});
+
+				$('#dataTable3').dataTable({
 					ajax: '../resources/table-data.json'
 				}).customSearch({
 					container: 'thead',
@@ -51,6 +75,35 @@
 							type: 'select',
 							chosen: true
 						}
+					]
+				});
+
+				$('#dataTable4').dataTable({
+					ajax: '../resources/table-data.json'
+				}).customSearch({
+					container: 'thead',
+					global: {
+						type: 'select',
+						chosen: true
+					},
+					fields: [
+						3,
+						{
+							columns: [0,1],
+							type: 'string',
+							autocomplete: true,
+							trigger: 'key'
+						},{
+							columns: 2,
+							multiple: true
+						},{
+							columns: 4,
+							type: 'number',
+							range: true,
+							slider: true
+						},
+						5,
+						6
 					]
 				});
 
@@ -92,6 +145,36 @@
 			<tbody></tbody>
 		</table>
 
+		<table id="dataTable3" class="display">
+			<thead>
+				<tr>
+					<th>First Name</th>
+					<th>Last Name</th>
+					<th>Age</th>
+					<th>Date</th>
+					<th>Amount</th>
+					<th>Available?</th>
+					<th>Race</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+
+		<table id="dataTable4" class="display">
+			<thead>
+				<tr>
+					<th>First Name</th>
+					<th>Last Name</th>
+					<th>Age</th>
+					<th>Date</th>
+					<th>Amount</th>
+					<th>Available?</th>
+					<th>Race</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+
 		<div id="code">
 			<ul>
 				<li><a href="#code-js">Javascript</a></li>
@@ -107,6 +190,30 @@
 					}).customSearch();
 
 					$('#dataTable2').dataTable({
+						ajax: '../resources/table-data.json'
+					}).customSearch({
+						fields: [
+							{
+								columns: [0,1],
+								advanced: true,
+								caseInsensitive: false
+							},
+							{
+								columns: 2,
+								advanced: true,
+							},
+							{
+								columns: 3,
+								advanced: true
+							},
+							{
+								columns: 4,
+								advanced: true
+							}
+						]
+					});
+
+					$('#dataTable3').dataTable({
 						ajax: '../resources/table-data.json'
 					}).customSearch({
 						container: 'thead',
@@ -136,13 +243,42 @@
 							}
 						]
 					});
+
+					$('#dataTable4').dataTable({
+						ajax: '../resources/table-data.json'
+					}).customSearch({
+						container: 'thead',
+						global: {
+							type: 'select',
+							chosen: true
+						},
+						fields: [
+							3,
+							{
+								columns: [0,1],
+								type: 'string',
+								autocomplete: true,
+								trigger: 'key'
+							},{
+								columns: 2,
+								multiple: true
+							},{
+								columns: 4,
+								type: 'number',
+								range: true,
+								slider: true
+							},
+							5,
+							6
+						]
+					});
 				</pre>
 
 				<p>The following Javascript libraries were used for this example</p>
 				<ul>
 					<li>//code.jquery.com/jquery-2.1.0.js</li>
 					<li>//cdn.datatables.net/1.10.0-beta.2/js/jquery.dataTables.js</li>
-					<li>../../jquery.datatables.customsearch.js</li>
+					<li>../../jquery.datatables.customsearch.min.js</li>
 					<li>../resources/Chosen/chosen.jquery.min.js</li>
 					<li>//code.jquery.com/ui/1.10.3/jquery-ui.min.js</li>
 				</ul>
@@ -166,6 +302,36 @@
 					</table>
 
 					<table id="dataTable2" class="display">
+						<thead>
+							<tr>
+								<th>First Name</th>
+								<th>Last Name</th>
+								<th>Age</th>
+								<th>Date</th>
+								<th>Amount</th>
+								<th>Available?</th>
+								<th>Race</th>
+							</tr>
+						</thead>
+						<tbody></tbody>
+					</table>
+
+					<table id="dataTable3" class="display">
+						<thead>
+							<tr>
+								<th>First Name</th>
+								<th>Last Name</th>
+								<th>Age</th>
+								<th>Date</th>
+								<th>Amount</th>
+								<th>Available?</th>
+								<th>Race</th>
+							</tr>
+						</thead>
+						<tbody></tbody>
+					</table>
+
+					<table id="dataTable4" class="display">
 						<thead>
 							<tr>
 								<th>First Name</th>

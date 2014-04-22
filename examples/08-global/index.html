@@ -1,12 +1,13 @@
-<!DOCTYPE HTML>
+	<!DOCTYPE HTML>
 <html>
 	<head>
-		<title>Example 04 - Advanced String</title>
+		<title>Example 08 - Global Settings</title>
 
 		<link type="text/css" rel="stylesheet" href="//cdn.datatables.net/1.10.0-beta.2/css/jquery.dataTables.css">
 		<link type="text/css" rel="stylesheet" href="//code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
 		<link type="text/css" rel="stylesheet" href="../resources/SyntaxHighlighter/shCore.css">
 		<link type="text/css" rel="stylesheet" href="../resources/SyntaxHighlighter/shThemeDefault.css">
+		<link type="text/css" rel="stylesheet" href="../resources/Chosen/chosen.min.css">
 
 		<script type="text/javascript" src="//code.jquery.com/jquery-2.1.0.js"></script>
 		<script type="text/javascript" src="//cdn.datatables.net/1.10.0-beta.2/js/jquery.dataTables.js"></script>
@@ -14,30 +15,36 @@
 		<script type="text/javascript" src="../resources/SyntaxHighlighter/shCore.js"></script>
 		<script type="text/javascript" src="../resources/SyntaxHighlighter/shBrushJScript.js"></script>
 		<script type="text/javascript" src="../resources/SyntaxHighlighter/shBrushXml.js"></script>
+		<script type="text/javascript" src="../resources/Chosen/chosen.jquery.min.js"></script>
 		<script type="text/javascript" src="../../jquery.datatables.customsearch.min.js"></script>
 		<script type="text/javascript">
 			$(document).ready(function(){
 				$('#dataTable').dataTable({
 					ajax: '../resources/table-data.json'
 				}).customSearch({
+					container: 'thead',
+					global: {
+						type: 'select',
+						chosen: true
+					},
 					fields: [
+						3,
 						{
 							columns: [0,1],
-							advanced: true,
-							caseInsensitive: false
-						},
-						{
+							type: 'string',
+							autocomplete: true,
+							trigger: 'key'
+						},{
 							columns: 2,
-							advanced: true,
-						},
-						{
-							columns: 3,
-							advanced: true
-						},
-						{
+							multiple: true
+						},{
 							columns: 4,
-							advanced: true
-						}
+							type: 'number',
+							range: true,
+							slider: true
+						},
+						5,
+						6
 					]
 				});
 
@@ -75,28 +82,33 @@
 			<div id="code-js">
 				<pre class="brush: js">
 					$('table').dataTable({
-						ajax: '../resources/table-data.json'
-					}).customSearch({
-						fields: [
-							{
-								columns: [0,1],
-								advanced: true,
-								caseInsensitive: false
+							ajax: '../resources/table-data.json'
+						}).customSearch({
+							container: 'thead',
+							global: {
+								type: 'select',
+								chosen: true
 							},
-							{
-								columns: 2,
-								advanced: true,
-							},
-							{
-								columns: 3,
-								advanced: true
-							},
-							{
-								columns: 4,
-								advanced: true
-							}
-						]
-					});
+							fields: [
+								3,
+								{
+									columns: [0,1],
+									type: 'string',
+									autocomplete: true,
+									trigger: 'key'
+								},{
+									columns: 2,
+									multiple: true
+								},{
+									columns: 4,
+									type: 'number',
+									range: true,
+									slider: true
+								},
+								5,
+								6
+							]
+						});
 				</pre>
 
 				<p>The following Javascript libraries were used for this example</p>
@@ -104,6 +116,8 @@
 					<li>//code.jquery.com/jquery-2.1.0.js</li>
 					<li>//cdn.datatables.net/1.10.0-beta.2/js/jquery.dataTables.js</li>
 					<li>../../jquery.datatables.customsearch.min.js</li>
+					<li>../resources/Chosen/chosen.jquery.min.js</li>
+					<li>//code.jquery.com/ui/1.10.3/jquery-ui.min.js</li>
 				</ul>
 			</div>
 
@@ -130,6 +144,8 @@
 				<p>The following CSS libraries were used for this example</p>
 				<ul>
 					<li>//cdn.datatables.net/1.10.0-beta.2/css/jquery.dataTables.css</li>
+					<li>../resources/Chosen/chosen.min.css</li>
+					<li>//code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css</li>
 				</ul>
 			</div>
 

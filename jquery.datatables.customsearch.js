@@ -1,10 +1,10 @@
-/*! jQuery DataTables Custom Search Plugin - v0.8.5 (2014-04-07) | Copyright 2014 Timothy Ruhle; Licensed MIT */
+/*! jQuery DataTables Custom Search Plugin - v0.8.8 (2014-04-07) | Copyright 2014 Timothy Ruhle; Licensed MIT */
 (function (window, document, undefined) {
 	'use strict';
 
 	var factory = function ($, DataTable) {
 
-		var CustomSearch = function (oDT, oConfig) {
+		var CustomSearch = function (table, config) {
 			var that = this;
 
 			// Sanity check that we are a new instance
@@ -24,6 +24,7 @@
 			 * @namespace The settings passed in by the user and manipulated by CustomSearch
 			 */
 			this.c = {
+				global: {},
 				fields: [],
 				container: '',
 				hideStandardSearch: true
@@ -40,8 +41,8 @@
 
 
 			// Run constructor logic
-			$(oDT).on('init.dt', function() {
-				that.init(oDT, oConfig);
+			$(table).on('init.dt', function () {
+				that.init(table, config);
 			});
 
 			// Return this for chaining
@@ -52,7 +53,7 @@
 			/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 			 * Private methods (they are of course public in JS, but recommended as private)
 			 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-			init: function (dt, config) {
+			init: function (table, config) {
 				var that = this,
 					i,
 					j,
@@ -67,7 +68,7 @@
 					method,
 					row;
 
-				this.s.dt = new DataTable.Api(dt).settings()[0];
+				this.s.dt = new DataTable.Api(table).settings()[0];
 				this.s.init = config || {};
 				this.s.table = $(this.s.dt.nTable);
 
@@ -99,6 +100,9 @@
 							columns: field
 						};
 					}
+
+					// bring in the global settings
+					field = $.extend(true, {}, this.c.global, field);
 
 					field.columns         = $.isArray(field.columns) ? field.columns : [field.columns];
 					field.columns.sort();
@@ -144,7 +148,7 @@
 						row.find('th').eq(this.c.fields[i].columns[0]).append(this.c.fields[i].field);
 					}
 				} else if (this.c.container === 'thead:before' || this.c.container === 'thead:after' ||
-					this.c.container === 'tfoot:before' || this.c.container === 'tfoot:after') {
+						this.c.container === 'tfoot:before' || this.c.container === 'tfoot:after') {
 					type = this.c.container.indexOf('thead') >= 0 ? 'thead' : 'tfoot';
 					element = this.s.table.find(type);
 					currentColumn = 0;
@@ -206,17 +210,17 @@
 								$(this).val(ui.item.label);
 								that.triggerSearch();
 							}
-						})[field.trigger](function() {
+						})[field.trigger](function () {
 							that.triggerSearch();
-						});;
+						});
 					} else if (field.slider) {
-						var j = this.getDistinctValuesInColumn(field.columns, field.dataType, true);
+						j = this.getDistinctValuesInColumn(field.columns, field.dataType, true);
 						$('#' + field.id).slider({
 							min: that.intParse(j[0]),
 							max: that.intParse(j[j.length - 1]),
 							values: [that.intParse(j[0]), that.intParse(j[j.length - 1])],
 							range: true,
-							slide: function(evt, ui) {
+							slide: function (evt, ui) {
 								$('#' + this.id + '_display').text(ui.values[0] + ' - ' + ui.values[1]);
 								that.triggerSearch();
 							}
@@ -228,11 +232,11 @@
 						if (field.range.length === 0) {
 							id.push(field.id);
 						} else {
-							for (j in field.id) {
+							for (j = 0; j < field.id.length; j++) {
 								id.push(field.id[j]);
 							}
 						}
-						$('#' + id.join(',#'))[field.trigger](function() {
+						$('#' + id.join(',#'))[field.trigger](function () {
 							that.triggerSearch();
 						});
 
@@ -266,7 +270,7 @@
 							data = that.s.table.DataTable().data(),
 							pagePassedData = [],
 							allPassedData = [],
-							i = settings._iDisplayStart,
+							i,
 							to = settings._iDisplayStart + settings._iDisplayLength;
 
 						if (to > data.length) {
@@ -277,7 +281,7 @@
 							to = rows.length;
 						}
 
-						for (; i < to; i++) {
+						for (i = settings._iDisplayStart; i < to; i++) {
 							pagePassedData.push(data[rows[i]]);
 						}
 
@@ -306,7 +310,7 @@
 					if (field.range.length === 0) {
 						if (field.type === 'switch') {
 							value = [];
-							$('#' + field.id + ' input:checked').each(function() {
+							$('#' + field.id + ' input:checked').each(function () {
 								value.push($(this).val());
 							});
 						} else {
@@ -320,7 +324,7 @@
 						if (value.length) {
 							pass = false;
 
-							if (field.type == 'date' && !advancedValue) {
+							if (field.type === 'date' && !advancedValue) {
 								for (j = 0; j < field.columns.length; j++) {
 									if (this.searchDate(data[field.columns[j]], value)) {
 										pass = true;
@@ -347,7 +351,7 @@
 							values = {
 								min: $('#' + field.id).slider('values', 0),
 								max: $('#' + field.id).slider('values', 1)
-							}
+							};
 						} else {
 							values = {
 								min: this.hasRange('min', field.range) ? $('#' + field.id.min).val() : '',
@@ -366,7 +370,7 @@
 						if (values.min || values.max) {
 							pass = false;
 							for (j = 0; j < field.columns.length; j++) {
-								if (field.type == 'date') {
+								if (field.type === 'date') {
 									if (this.searchDateRange(data[field.columns[j]], values)) {
 										pass = true;
 										break;
@@ -404,7 +408,7 @@
 			},
 
 			searchStringAdvanced: function (string, search, advanced, caseInsensitive, smart) {
-				var i = 0,
+				var i,
 					stringNumber,
 					searchNumber;
 
@@ -418,37 +422,35 @@
 					search = [search];
 				}
 
-				for (; i < search.length; i++) {
+				for (i = 0; i < search.length; i++) {
 					if (caseInsensitive) {
 						search[i] = search[i].toLowerCase();
 					}
 
 					searchNumber = this.intParse(search[i]);
 
-					if ((!advanced || advanced == 'contains') && string.search(search[i]) != -1) {
+					if ((!advanced || advanced === 'contains') && string.search(search[i]) !== -1) {
 						return true;
-					} else if (advanced == 'not-contains' && string.search(search[i]) == -1) {
+					} else if (advanced === 'not-contains' && string.search(search[i]) === -1) {
 						return true;
-					} else if (advanced == 'equal' && string == search[i]) {
+					} else if (advanced === 'equal' && string === search[i]) {
 						return true;
-					} else if (advanced == 'not-equal' && string != search[i]) {
+					} else if (advanced === 'not-equal' && string !== search[i]) {
 						return true;
-					} else if (advanced == 'greater' && stringNumber > searchNumber) {
+					} else if (advanced === 'greater' && stringNumber > searchNumber) {
 						return true;
-					} else if (advanced == 'less' && stringNumber < searchNumber) {
+					} else if (advanced === 'less' && stringNumber < searchNumber) {
 						return true;
-					} else if (advanced == 'begins' && string.indexOf(search[i]) === 0) {
+					} else if (advanced === 'begins' && string.indexOf(search[i]) === 0) {
 						return true;
 					}
 				}
-
-
 
 				return false;
 			},
 
 			searchNumberRange: function (cell, values) {
-				cell = this.intParse(cell.toString().replace(/[^\d]/i, ''));
+				cell = this.intParse(cell);
 				values.min = this.intParse(values.min);
 				values.max = this.intParse(values.max);
 
@@ -457,10 +459,10 @@
 				}
 
 				return (
-						(isNaN(values.min) && isNaN(values.max)) ||
-						(isNaN(values.min) && values.max >= cell) ||
-						(values.min <= cell && isNaN(values.max)) ||
-						(values.min <= cell && values.max >= cell)
+					(isNaN(values.min) && isNaN(values.max)) ||
+					(isNaN(values.min) && values.max >= cell) ||
+					(values.min <= cell && isNaN(values.max)) ||
+					(values.min <= cell && values.max >= cell)
 				);
 			},
 
@@ -468,7 +470,7 @@
 				cell = new Date(cell);
 				value = new Date(value);
 
-				return (this.isValidDate(cell) && cell == value);
+				return (this.isValidDate(cell) && cell === value);
 			},
 
 			searchDateRange: function (cell, values) {
@@ -481,10 +483,10 @@
 				}
 
 				return (
-						(!this.isValidDate(values.min) && !this.isValidDate(values.max)) ||
-						(!this.isValidDate(values.min) && values.max >= cell) ||
-						(values.min <= cell               && !this.isValidDate(values.max)) ||
-						(values.min <= cell               && values.max >= cell)
+					(!this.isValidDate(values.min) && !this.isValidDate(values.max)) ||
+					(!this.isValidDate(values.min) && values.max >= cell) ||
+					(values.min <= cell            && !this.isValidDate(values.max)) ||
+					(values.min <= cell            && values.max >= cell)
 				);
 			},
 
@@ -541,108 +543,108 @@
 			},
 
 
-			createField: function(field) {
-				var i,
-					t;
+			createField: function (field) {
+				var i;
 
 				field.fieldLabel = [];
 				field.field = [];
 
 				switch (field.type) {
-					case 'string':
+				case 'string':
+					if (field.label) {
+						field.fieldLabel = '<label for="' + field.id + '">' + field.label + '</label>';
+					}
+					field.field = field.advanced.field + '<input type="text" id="' + field.id + '">';
+					break;
+
+				case 'number':
+				case 'date':
+					if (field.range.length === 0) {
 						if (field.label) {
 							field.fieldLabel = '<label for="' + field.id + '">' + field.label + '</label>';
 						}
-						field.field = field.advanced.field + '<input type="text" id="' + field.id + '">';
-					break;
-					case 'number':
-					case 'date':
-						if (field.range.length === 0) {
-							if (field.label) {
-								field.fieldLabel = '<label for="' + field.id + '">' + field.label + '</label>';
-							}
 
-							field.field = field.advanced.field + '<input type="' + field.type + '" id="' + field.id + '">';
+						field.field = field.advanced.field + '<input type="' + field.type + '" id="' + field.id + '">';
+					} else {
+						if (field.slider) {
+							field.fieldLabel = '<label for="' + field.id + '">' + field.label + '</label>';
+							field.field = field.advanced.field + '<div id="' + field.id + '"></div><div id="' + field.id + '_display"></div>';
 						} else {
-							if (field.slider) {
-								field.fieldLabel = '<label for="' + field.id + '">' + field.label + '</label>';
-								field.field = field.advanced.field + '<div id="' + field.id + '"></div><div id="' + field.id + '_display"></div>';
-							} else {
-								if (this.hasRange('min', field.range)) {
-									if (field.label) {
-										field.fieldLabel.push('<label for="' + field.id.min + '">' + field.label.min + '</label>');
-									}
-									field.field.push('<input type="' + field.type + '" id="' + field.id.min + '">');
+							if (this.hasRange('min', field.range)) {
+								if (field.label) {
+									field.fieldLabel.push('<label for="' + field.id.min + '">' + field.label.min + '</label>');
 								}
+								field.field.push('<input type="' + field.type + '" id="' + field.id.min + '">');
+							}
 
-								if (this.hasRange('max', field.range)) {
-									if (field.label) {
-										field.fieldLabel.push('<label for="' + field.id.max + '">' + field.label.max + '</label>');
-									}
-									field.field.push('<input type="' + field.type + '" id="' + field.id.max + '">');
+							if (this.hasRange('max', field.range)) {
+								if (field.label) {
+									field.fieldLabel.push('<label for="' + field.id.max + '">' + field.label.max + '</label>');
 								}
+								field.field.push('<input type="' + field.type + '" id="' + field.id.max + '">');
 							}
 						}
-					break;
-					case 'select':
-						if (field.label) {
-							field.fieldLabel = '<label for="' + field.id + '">' + field.label + '</label>';
-						}
-
-						if (!$.isArray(field.options) || field.options.length === 0) {
-							field.options = this.getDistinctValuesInColumn(field.columns, field.dataType, true);
-						}
-
-						field.field = field.advanced.field + '<select id="' + field.id + '"';
-
-						if (field.multiple) {
-							field.field += ' multiple="multiple"';
-						}
-
-						field.field += '>';
-
-						if (!field.multiple) {
-							field.options.unshift({
-								value: '',
-								text: field.chosen ? '' : 'All'
-							});
-						}
-
-						for (i = 0; i < field.options.length; i++) {
-							if (typeof field.options[i] === 'object') {
-								field.field += '<option value="' + field.options[i].value + '">' + field.options[i].text + '</option>';
-							} else {
-								field.field += '<option value="' + field.options[i] + '">' + field.options[i] + '</option>';
-							}
-						}
-
-						field.field += '</select>';
+					}
 					break;
 
-					case 'switch':
-						if (!$.isArray(field.options) || field.options.length === 0) {
-							field.options = this.getDistinctValuesInColumn(field.columns, field.dataType, true);
+				case 'select':
+					if (field.label) {
+						field.fieldLabel = '<label for="' + field.id + '">' + field.label + '</label>';
+					}
+
+					if (!$.isArray(field.options) || field.options.length === 0) {
+						field.options = this.getDistinctValuesInColumn(field.columns, field.dataType, true);
+					}
+
+					field.field = field.advanced.field + '<select id="' + field.id + '"';
+
+					if (field.multiple) {
+						field.field += ' multiple="multiple"';
+					}
+
+					field.field += '>';
+
+					if (!field.multiple) {
+						field.options.unshift({
+							value: '',
+							text: field.chosen ? '' : 'All'
+						});
+					}
+
+					for (i = 0; i < field.options.length; i++) {
+						if (typeof field.options[i] === 'object') {
+							field.field += '<option value="' + field.options[i].value + '">' + field.options[i].text + '</option>';
+						} else {
+							field.field += '<option value="' + field.options[i] + '">' + field.options[i] + '</option>';
 						}
+					}
 
-						for (i = 0; i < field.options.length; i++) {
-							if (typeof field.options[i] === 'object') {
-								field.field.push('<input type="checkbox" id="' + field.id + '_' + i + '" name="' + field.id + '"' + field.options[i].value + '>');
-								field.field.push('<label for="' + field.id + '_' + i + '">' + field.options[i].text + '</label>');
-							} else {
-								field.field.push('<input type="checkbox" id="' + field.id + '_' + i + '" name="' + field.id + '" value="' + field.options[i] + '">');
-								field.field.push('<label for="' + field.id + '_' + i + '">' + field.options[i] + '</label>');
-							}
-						}
-
-						field.field.unshift('<div id="' + field.id + '">');
-						field.field.push('</div>');
-
-						field.field = field.field.join('');
+					field.field += '</select>';
 					break;
 
-					default:
-						throw('Warning: CustomSearch init failed due to invalid field type given - ' + field.type);
+				case 'switch':
+					if (!$.isArray(field.options) || field.options.length === 0) {
+						field.options = this.getDistinctValuesInColumn(field.columns, field.dataType, true);
+					}
+
+					for (i = 0; i < field.options.length; i++) {
+						if (typeof field.options[i] === 'object') {
+							field.field.push('<input type="checkbox" id="' + field.id + '_' + i + '" name="' + field.id + '"' + field.options[i].value + '>');
+							field.field.push('<label for="' + field.id + '_' + i + '">' + field.options[i].text + '</label>');
+						} else {
+							field.field.push('<input type="checkbox" id="' + field.id + '_' + i + '" name="' + field.id + '" value="' + field.options[i] + '">');
+							field.field.push('<label for="' + field.id + '_' + i + '">' + field.options[i] + '</label>');
+						}
+					}
+
+					field.field.unshift('<div id="' + field.id + '">');
+					field.field.push('</div>');
+
+					field.field = field.field.join('');
 					break;
+
+				default:
+					throw ('Warning: CustomSearch init failed due to invalid field type given - ' + field.type);
 				}
 
 				field.fullField = '';
@@ -666,12 +668,13 @@
 					that = this;
 
 				$.each(this.s.dt.aoData, function (index, row) {
-					var data = [];
+					var data = [],
+						i;
 
 					if ($.isArray(columns)) {
-						for (var i = 0; i < columns.length; i++) {
+						for (i = 0; i < columns.length; i++) {
 							data.push(row._aData[columns[i]]);
-						};
+						}
 					} else {
 						data.push(row._aData[columns]);
 					}
@@ -687,7 +690,7 @@
 					if (dataType === 'string' || dataType === 'date') {
 						options.sort();
 					} else {
-						options.sort(function(a, b){ return that.intParse(a) - that.intParse(b); });
+						options.sort(function (a, b) { return that.intParse(a) - that.intParse(b); });
 					}
 				}
 
@@ -698,13 +701,14 @@
 				return multiple === true;
 			},
 
-			intParse: function(number) {
+			intParse: function (number) {
 				return parseInt(number.toString().replace(/[^\d]/i, ''), 10);
 			},
 
 			getId: function (index, range, field, slider) {
 				var baseId = this.s.dt.sInstance + '_' + index,
-					newId, fieldId;
+					newId,
+					fieldId;
 
 				if (range.length === 0 || slider) {
 					newId = baseId;
@@ -737,7 +741,7 @@
 				var advancedField = '',
 					i,
 					advancedId = id + '_advanced',
-					numerical = type == 'number' || type == 'date',
+					numerical = type === 'number' || type === 'date',
 					options = [
 						['contains', 'Contains', !numerical],
 						['not-contains', 'Does Not Contain', false],
@@ -745,12 +749,12 @@
 						['not-equal', 'Is Not Equal To', false]
 					];
 
-					if (numerical) {
-						options.push(['greater', 'Is Greather Than', false]);
-						options.push(['less', 'Is Less Than', false]);
-					} else {
-						options.push(['begins', 'Begins With', false]);
-					}
+				if (numerical) {
+					options.push(['greater', 'Is Greather Than', false]);
+					options.push(['less', 'Is Less Than', false]);
+				} else {
+					options.push(['begins', 'Begins With', false]);
+				}
 
 				if (advanced === true && range.length === 0) {
 					advancedField += '<select id="' + advancedId + '">';
@@ -774,7 +778,7 @@
 			},
 
 			getServer: function (server, id) {
-				return server ? server : id;
+				return server || id;
 			},
 
 			getLabel: function (label, range, columns, slider) {
@@ -813,10 +817,10 @@
 				var newType = type;
 
 				if (!newType) {
-					if (columns.length == 1) {
+					if (columns.length === 1) {
 						newType = this.s.dt.aoColumns[columns[0]].sType;
 
-						if (newType == 'num' || newType == 'currency' || newType == 'num-fmt') {
+						if (newType === 'num' || newType === 'currency' || newType === 'num-fmt') {
 							newType = 'number';
 						}
 					} else {
@@ -830,10 +834,10 @@
 			getDataType: function (columns) {
 				var newDataType = 'string';
 
-				if (columns.length == 1) {
+				if (columns.length === 1) {
 					newDataType = this.s.dt.aoColumns[columns[0]].sType;
 
-					if (newDataType == 'num' || newDataType == 'currency' || newDataType == 'num-fmt') {
+					if (newDataType === 'num' || newDataType === 'currency' || newDataType === 'num-fmt') {
 						newDataType = 'number';
 					}
 				}
@@ -842,12 +846,12 @@
 			},
 
 
-			hasRange: function ( value, range ) {
+			hasRange: function (value, range) {
 				return $.inArray(value, range) >= 0;
 			},
 
 
-			sortBySubArray: function ( a, b ) {
+			sortBySubArray: function (a, b) {
 				var minA = a.columns,
 					minB = b.columns;
 
@@ -863,9 +867,11 @@
 			},
 
 
-			triggerSearch: function() {
+			triggerSearch: function () {
+				var ajax, j;
+
 				if (this.s.dt.oInit.serverSide) {
-					var ajax = this.s.dt.ajax;
+					ajax = this.s.dt.ajax;
 
 					if (typeof ajax === 'string') {
 						ajax = {url: ajax, data: {}};
@@ -896,15 +902,15 @@
 
 	if (typeof define === 'function' && define.amd) { // Define as an AMD module if possible
 		define('datatables-customsearch', ['jquery', 'datatables'], factory);
-	} else if ( jQuery && !jQuery.fn.dataTable.CustomSearch ) { // Otherwise simply initialise as normal, stopping multiple evaluation
+	} else if (jQuery && !jQuery.fn.dataTable.CustomSearch) { // Otherwise simply initialise as normal, stopping multiple evaluation
 		factory(jQuery, jQuery.fn.dataTable);
 	}
 
-	$.fn.customSearch = function (options_arg) {
-		$(this.selector).each(function(index, value) {
-			new $.fn.dataTable.CustomSearch(this, options_arg);
+	jQuery.fn.customSearch = function (options_arg) {
+		$(this.selector).each(function () {
+			new jQuery.fn.dataTable.CustomSearch(this, options_arg);
 		});
 		return this;
 	};
 
-} (window, document));
+}(window, document));
