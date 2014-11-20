@@ -1,4 +1,4 @@
-/*! jQuery DataTables Custom Search Plugin - v0.8.8 (2014-04-07) | Copyright 2014 Timothy Ruhle; Licensed MIT */
+/*! jQuery DataTables Custom Search Plugin - v0.9.0 (2014-11-21) | Copyright 2014 Timothy Ruhle; Licensed MIT */
 (function (window, document, undefined) {
 	'use strict';
 
@@ -232,8 +232,12 @@
 						if (field.range.length === 0) {
 							id.push(field.id);
 						} else {
-							for (j = 0; j < field.id.length; j++) {
-								id.push(field.id[j]);
+							if (field.id.min) {
+								id.push(field.id.min);
+							}
+
+							if (field.id.max) {
+								id.push(field.id.max);
 							}
 						}
 						$('#' + id.join(',#'))[field.trigger](function () {
