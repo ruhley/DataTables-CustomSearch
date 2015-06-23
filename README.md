@@ -1,6 +1,6 @@
 #DataTables-CustomSearch
 
-An extension to the jQuery plugin DataTables 1.10 (http://next.datatables.net) allowing you to specify custom search fields.
+An extension to the jQuery plugin DataTables 1.10 (http://datatables.net) allowing you to specify custom search fields.
 
 
 ##Quick Example
