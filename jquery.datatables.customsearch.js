@@ -474,7 +474,7 @@
 				cell = new Date(cell);
 				value = new Date(value);
 
-				return (this.isValidDate(cell) && cell === value);
+				return (this.isValidDate(cell) && cell.getDate() === value.getDate());
 			},
 
 			searchDateRange: function (cell, values) {
@@ -488,9 +488,9 @@
 
 				return (
 					(!this.isValidDate(values.min) && !this.isValidDate(values.max)) ||
-					(!this.isValidDate(values.min) && values.max >= cell) ||
-					(values.min <= cell            && !this.isValidDate(values.max)) ||
-					(values.min <= cell            && values.max >= cell)
+					(!this.isValidDate(values.min) && values.max.getDate() >= cell.getDate()) ||
+					(values.min.getDate() <= cell.getDate()            && !this.isValidDate(values.max)) ||
+					(values.min.getDate() <= cell.getDate()            && values.max.getDate() >= cell.getDate())
 				);
 			},
 
